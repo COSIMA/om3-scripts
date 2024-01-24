@@ -2,11 +2,14 @@
 # Copyright 2023 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Contact: Ezhilsabareesh Kannadasan
+# Generate a drof xml file that contains a time-series of runoff data files where all the fields in the stream are located.
+
 # To run:
 #   python generate_xml_datm.py <year_first> <year_last>
 # To generate IAF xml file, set year_first and year_last to the forcing period
 # To generate RYF xml file, set year_first==year_last
+
+# Contact: Ezhilsabareesh Kannadasan <ezhilsabareesh.kannadasan@anu.edu.au>
 
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
