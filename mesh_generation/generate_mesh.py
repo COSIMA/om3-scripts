@@ -275,7 +275,7 @@ class LatLonGrid(BaseGrid):
             The name of the area variable if one exists
         """
 
-        grid = xr.open_dataset(grid_filename, chunks={})
+        grid = xr.open_dataset(grid_filename, chunks=-1)
         inputs = [grid_filename]
 
         if mask_filename:
