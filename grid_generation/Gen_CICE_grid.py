@@ -33,7 +33,7 @@ def generate_cice_grid(in_superGridPath, output_file):
     HTE = in_superGridFile['dy'] * 100.0  # convert to cm
     HTE = HTE[::2, 1::2] + HTE[1::2, 1::2]
 
-    ANGLE = dtr * in_superGridFile['angle_dx'][1::2, 1::2]
+    ANGLE = np.deg2rad(in_superGridFile['angle_dx'][1::2, 1::2])
 
     # Close input files
     in_superGridFile.close()
@@ -92,8 +92,5 @@ if __name__ == "__main__":
 
     input_superGridPath = sys.argv[1]
     output_file = sys.argv[2]
-
-    # Constants
-    dtr = np.pi / 180.0  # Degree to Radian conversion
-
+    
     generate_cice_grid(input_superGridPath, output_file)
