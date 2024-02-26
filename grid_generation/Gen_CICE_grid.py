@@ -22,7 +22,7 @@ def generate_cice_grid(in_superGridPath, output_file):
     in_superGridFile = xr.open_dataset(in_superGridPath)
 
     # Constants
-    ULAT = np.deg2rad(in_superGridFile['y'][1::2, 2::2])
+    ULAT = np.deg2rad(in_superGridFile['y'][2::2, 1::2])
     ULON = np.deg2rad(in_superGridFile['x'][1::2, 2::2])
     TLAT = np.deg2rad(in_superGridFile['y'][1::2, 1::2])
     TLON = np.deg2rad(in_superGridFile['x'][1::2, 1::2])
