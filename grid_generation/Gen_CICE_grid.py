@@ -65,7 +65,7 @@ def generate_cice_grid(in_superGridPath, output_file):
     tlon.units = "radians"
     tlon.title = "Longitude of T points"
     htn.units = "cm"
-    htn.title = "Width of T cells on North side."
+    htn.title = "Width of T cells on N side."
     hte.units = "cm"
     hte.title = "Width of T cells on East side."
     angle.units = "radians"
