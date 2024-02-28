@@ -1,5 +1,5 @@
 """
-Script: generate_cice_grid.py
+Script: Gen_CICE_grid.py
 
 Description: 
 This script generates a CICE grid from the MOM super grid provided in the input NetCDF file.
@@ -87,7 +87,7 @@ def generate_cice_grid(in_superGridPath, output_file):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python script.py <input_superGridPath> <output_file>")
+        print("Usage: python Gen_CICE_grid.py <input_superGridPath> <output_file>")
         sys.exit(1)
 
     input_superGridPath = sys.argv[1]
