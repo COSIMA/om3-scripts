@@ -33,7 +33,26 @@ def generate_cice_grid(in_superGridPath, output_file):
     HTE = in_superGridFile['dy'] * 100.0  # convert to cm
     HTE = HTE[::2, 1::2] + HTE[1::2, 1::2]
 
-    ANGLE = np.deg2rad(in_superGridFile['angle_dx'][1::2, 1::2])
+    ANGLE = np.deg2rad(in_superGridFile['angle_dx'][2::2, 2::2])
+    ANGLET= np.deg2rad(in_superGridFile['angle_dx'][1::2, 1::2])
+       
+    # Area
+    AREA  = (in_superGridFile['area'])
+    TAREA = AREA[::2,::2] + AREA[1::2,1::2] + AREA[::2,1::2] +  AREA[1::2,::2]
+    
+    array_to_roll = AREA[2::2,2::2]
+    
+    # Roll the array along axis 0 and concatenate the last row as the first row
+    rolled_array_axis0 = np.concatenate((
+    np.roll(array_to_roll, -1, axis=0),
+    array_to_roll[-1:, :]), axis=0)
+
+    # Roll the rolled array along axis 1 and concatenate the last column as the first column
+    rolled_array = np.concatenate((
+    np.roll(rolled_array_axis0, -1, axis=1),
+    rolled_array_axis0[:, -1:]), axis=1)
+    
+    UAREA = AREA[1::2,1::2] + np.concatenate((np.roll(AREA[1::2, 2::2], -1, axis=1), AREA[1::2, 2::2][:, :1]), axis=1) + np.concatenate((np.roll(AREA[2::2, 1::2], -1, axis=0), AREA[2::2, 1::2][:1, :]), axis=0) + rolled_array
 
     # Close input files
     in_superGridFile.close()
@@ -54,6 +73,9 @@ def generate_cice_grid(in_superGridPath, output_file):
     htn = nc.createVariable('htn', 'f8', ('ny', 'nx'))
     hte = nc.createVariable('hte', 'f8', ('ny', 'nx'))
     angle = nc.createVariable('angle', 'f8', ('ny', 'nx'))
+    angleT = nc.createVariable('angleT', 'f8', ('ny', 'nx'))
+    tarea = nc.createVariable('tarea', 'f8', ('ny', 'nx'))
+    uarea = nc.createVariable('uarea', 'f8', ('ny', 'nx'))
 
     # Add attributes
     ulat.units = "radians"
@@ -70,6 +92,13 @@ def generate_cice_grid(in_superGridPath, output_file):
     hte.title = "Width of T cells on E side."
     angle.units = "radians"
     angle.title = "Rotation angle of U cells."
+    angleT.units = "radians" 
+    angleT.title = "Rotation angle of T cells." 
+    tarea.units = "m^2" 
+    tarea.title = "Area of T cells." 
+    uarea.units = "m^2" 
+    uarea.title = "Area of U cells." 
+
 
     # Write data to variables
     ulat[:] = ULAT
@@ -79,6 +108,9 @@ def generate_cice_grid(in_superGridPath, output_file):
     htn[:] = HTN
     hte[:] = HTE
     angle[:] = ANGLE
+    angleT[:] = ANGLET
+    tarea[:] = TAREA
+    uarea[:] = UAREA
 
     # Close the file
     nc.close()
