@@ -140,6 +140,9 @@ def generate_cice_grid(in_superGridPath, output_file):
         nc.created_by = f"{os.environ.get('USER')}"
         nc.history = f"Created using commit {git_hash} of {git_url}"
     else:
+        nc.inputfile = f"{in_superGridPath}"
+        nc.timeGenerated = f"{datetime.now()}"
+        nc.created_by = f"{os.environ.get('USER')}"
         nc.history = f"python Gen_CICE_grid.py {in_superGridPath} {output_file}"
 
     # Write data to variables
