@@ -16,6 +16,39 @@ import numpy as np
 import xarray as xr
 from netCDF4 import Dataset
 import sys
+import os
+import subprocess
+from datetime import datetime
+
+
+def is_git_repo():
+    """
+    Return True/False depending on whether or not the current directory is a git repo.
+    """
+
+    return subprocess.call(
+        ['git', '-C', '.', 'status'],
+        stderr=subprocess.STDOUT,
+        stdout = open(os.devnull, 'w')
+    ) == 0
+
+def git_info():
+    """
+    Return the git repo origin url, relative path to this file, and latest commit hash.
+    """
+
+    url = subprocess.check_output(
+        ["git", "remote", "get-url", "origin"]
+    ).decode('ascii').strip()
+    top_level_dir = subprocess.check_output(
+        ['git', 'rev-parse', '--show-toplevel']
+    ).decode('ascii').strip()
+    rel_path = os.path.relpath(__file__, top_level_dir)
+    hash = subprocess.check_output(
+        ['git', 'rev-parse', 'HEAD']
+    ).decode('ascii').strip()
+
+    return url, rel_path, hash
 
 def generate_cice_grid(in_superGridPath, output_file):
     # Read input files
@@ -99,6 +132,15 @@ def generate_cice_grid(in_superGridPath, output_file):
     uarea.units = "m^2" 
     uarea.title = "Area of U cells." 
 
+    # Add versioning information    
+    if is_git_repo():
+        git_url, git_hash, rel_path = git_info()
+        nc.inputfile = f"{in_superGridPath}"
+        nc.timeGenerated = f"{datetime.now()}"
+        nc.created_by = f"{os.environ.get('USER')}"
+        nc.history = f"Created using commit {git_hash} of {git_url}"
+    else:
+        nc.history = f"python Gen_CICE_grid.py {in_superGridPath} {output_file}"
 
     # Write data to variables
     ulat[:] = ULAT
