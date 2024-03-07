@@ -60,12 +60,12 @@ def generate_cice_grid(in_superGridPath, output_file):
     TLAT = np.deg2rad(in_superGridFile['y'][1::2, 1::2])
     TLON = np.deg2rad(in_superGridFile['x'][1::2, 1::2])
 
-    # MPI
     HTN = in_superGridFile['dx'] * 100.0  # convert to cm
     HTN = HTN[1::2, ::2] + HTN[1::2, 1::2]
     HTE = in_superGridFile['dy'] * 100.0  # convert to cm
     HTE = HTE[::2, 1::2] + HTE[1::2, 1::2]
 
+    # The angle of rotation is a corner cell centres and applies to both t and u cells.
     ANGLE = np.deg2rad(in_superGridFile['angle_dx'][2::2, 2::2])
     ANGLET= np.deg2rad(in_superGridFile['angle_dx'][1::2, 1::2])
        
@@ -73,19 +73,14 @@ def generate_cice_grid(in_superGridPath, output_file):
     AREA  = (in_superGridFile['area'])
     TAREA = AREA[::2,::2] + AREA[1::2,1::2] + AREA[::2,1::2] +  AREA[1::2,::2]
     
-    array_to_roll = AREA[2::2,2::2]
-    
-    # Roll the array along axis 0 and concatenate the last row as the first row
-    rolled_array_axis0 = np.concatenate((
-    np.roll(array_to_roll, -1, axis=0),
-    array_to_roll[-1:, :]), axis=0)
+    # UAREA need to wrap around the globe. Copy ocn_area and
+    # add an extra column at the end. Also u-cells cross the
+    # tri-polar fold so add an extra row at the top.
+    area_ext = np.append(AREA[:], AREA[:, 0:1], axis=1)
+    area_ext = np.append(area_ext[:], area_ext[-1:, :], axis=0)
 
-    # Roll the rolled array along axis 1 and concatenate the last column as the first column
-    rolled_array = np.concatenate((
-    np.roll(rolled_array_axis0, -1, axis=1),
-    rolled_array_axis0[:, -1:]), axis=1)
-    
-    UAREA = AREA[1::2,1::2] + np.concatenate((np.roll(AREA[1::2, 2::2], -1, axis=1), AREA[1::2, 2::2][:, :1]), axis=1) + np.concatenate((np.roll(AREA[2::2, 1::2], -1, axis=0), AREA[2::2, 1::2][:1, :]), axis=0) + rolled_array
+    UAREA = area_ext[1::2, 1::2] + area_ext[2::2, 1::2] + \
+                    area_ext[2::2, 2::2] + area_ext[1::2, 2::2]
 
     # Close input files
     in_superGridFile.close()
@@ -156,7 +151,6 @@ def generate_cice_grid(in_superGridPath, output_file):
     angleT[:] = ANGLET
     tarea[:] = TAREA
     uarea[:] = UAREA
-
     # Close the file
     nc.close()
 
