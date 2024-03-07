@@ -61,9 +61,9 @@ def generate_cice_grid(in_superGridPath, output_file):
     TLON = np.deg2rad(in_superGridFile['x'][1::2, 1::2])
 
     HTN = in_superGridFile['dx'] * 100.0  # convert to cm
-    HTN = HTN[1::2, ::2] + HTN[1::2, 1::2]
+    HTN = HTN[2::2, ::2] + HTN[2::2, 1::2]
     HTE = in_superGridFile['dy'] * 100.0  # convert to cm
-    HTE = HTE[::2, 1::2] + HTE[1::2, 1::2]
+    HTE = HTE[::2, 2::2] + HTE[1::2, 2::2]
 
     # The angle of rotation is a corner cell centres and applies to both t and u cells.
     ANGLE = np.deg2rad(in_superGridFile['angle_dx'][2::2, 2::2])
