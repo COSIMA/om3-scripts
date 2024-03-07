@@ -65,7 +65,7 @@ def generate_cice_grid(in_superGridPath, output_file):
     HTE = in_superGridFile['dy'] * 100.0  # convert to cm
     HTE = HTE[::2, 2::2] + HTE[1::2, 2::2]
 
-    # The angle of rotation is a corner cell centres and applies to both t and u cells.
+    # The angle of rotation is at corner cell centres and applies to both t and u cells.
     ANGLE = np.deg2rad(in_superGridFile['angle_dx'][2::2, 2::2])
     ANGLET= np.deg2rad(in_superGridFile['angle_dx'][1::2, 1::2])
        
@@ -80,7 +80,7 @@ def generate_cice_grid(in_superGridPath, output_file):
     area_ext = np.append(area_ext[:], area_ext[-1:, :], axis=0)
 
     UAREA = area_ext[1::2, 1::2] + area_ext[2::2, 1::2] + \
-                    area_ext[2::2, 2::2] + area_ext[1::2, 2::2]
+                area_ext[2::2, 2::2] + area_ext[1::2, 2::2]
 
     # Close input files
     in_superGridFile.close()
@@ -94,16 +94,16 @@ def generate_cice_grid(in_superGridPath, output_file):
     nc.createDimension('nx', nx)
 
     # Define variables
-    ulat = nc.createVariable('ulat', 'f8', ('ny', 'nx'))
-    ulon = nc.createVariable('ulon', 'f8', ('ny', 'nx'))
-    tlat = nc.createVariable('tlat', 'f8', ('ny', 'nx'))
-    tlon = nc.createVariable('tlon', 'f8', ('ny', 'nx'))
-    htn = nc.createVariable('htn', 'f8', ('ny', 'nx'))
-    hte = nc.createVariable('hte', 'f8', ('ny', 'nx'))
-    angle = nc.createVariable('angle', 'f8', ('ny', 'nx'))
-    angleT = nc.createVariable('angleT', 'f8', ('ny', 'nx'))
-    tarea = nc.createVariable('tarea', 'f8', ('ny', 'nx'))
-    uarea = nc.createVariable('uarea', 'f8', ('ny', 'nx'))
+    ulat = nc.createVariable('ulat', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    ulon = nc.createVariable('ulon', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    tlat = nc.createVariable('tlat', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    tlon = nc.createVariable('tlon', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    htn = nc.createVariable('htn', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    hte = nc.createVariable('hte', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    angle = nc.createVariable('angle', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    angleT = nc.createVariable('angleT', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    tarea = nc.createVariable('tarea', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
+    uarea = nc.createVariable('uarea', 'f8', ('ny', 'nx'), compression='zlib', complevel=1)
 
     # Add attributes
     ulat.units = "radians"
