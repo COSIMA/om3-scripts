@@ -6,7 +6,7 @@ This script generates a CICE grid from the MOM super grid provided in the input 
 Usage:
 python make_cice_grid.py <ocean_hgrid> <ocean_hgrid>
 - ocean_hgrid: Path to the MOM super grid NetCDF file.
-- ocean_hgrid: Path to the corresponding hgrid NetCDF file.
+- ocean_mask: Path to the corresponding mask NetCDF file.
 
 """
 
@@ -59,9 +59,37 @@ def main():
     cice.grid_f.inputfile_md5 = md5sum(args.ocean_hgrid)
     cice.grid_f.history_command = f"python make_CICE_grid.py {args.ocean_hgrid} {args.ocean_mask}"
 
-    crs = cice.grid_f.createVariable('crs', 'int')
-    crs.grid_mapping_name = "latitude_longitude"
-    # crs.crs_wkt = #TBA
+    #AS: based on https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/build/ch05s06.html
+    crs = cice.grid_f.createVariable('tripolar', 'S1')
+    crs.grid_mapping_name = "tripolar_latitude_longitude"
+    crs.crs_wkt = """
+        GEOGCRS["WGS 84",
+            ENSEMBLE["World Geodetic System 1984 ensemble",
+                MEMBER["World Geodetic System 1984 (Transit)"],
+                MEMBER["World Geodetic System 1984 (G730)"],
+                MEMBER["World Geodetic System 1984 (G873)"],
+                MEMBER["World Geodetic System 1984 (G1150)"],
+                MEMBER["World Geodetic System 1984 (G1674)"],
+                MEMBER["World Geodetic System 1984 (G1762)"],
+                MEMBER["World Geodetic System 1984 (G2139)"],
+                ELLIPSOID["WGS 84",6378137,298.257223563,
+                    LENGTHUNIT["metre",1]],
+                ENSEMBLEACCURACY[2.0]],
+            PRIMEM["Greenwich",0,
+                ANGLEUNIT["radian",1]],
+            CS[ellipsoidal,2],
+                AXIS["geodetic latitude (Lat)",north,
+                    ORDER[1],
+                    ANGLEUNIT["radian",1]],
+                AXIS["geodetic longitude (Lon)",east,
+                    ORDER[2],
+                    ANGLEUNIT["radian",1]],
+            USAGE[
+                SCOPE["Horizontal component of 3D system."],
+                AREA["World."],
+                BBOX[-80,80,90,80]],
+            ID["EPSG",4326]]
+        """
 
     cice.write()
 
