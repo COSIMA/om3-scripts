@@ -18,10 +18,8 @@ python3 make_cice_grid.py /g/data/ik11/inputs/access-om2/input_20201102/mom_1deg
 mkdir 1deg
 mv grid.nc kmt.nc 1deg
 
-
 echo "0.25 deg"
-
-python3 make_cice_grid.py /g/data/ik11/inputs/access-om2/input_20201102/mom_025deg/ocean_hgrid.nc /g/data/ik11/inputs/access-om2/input_20201102/mom_025deg/ocean_mask.nc
+python3 make_cice_grid.py /g/data/ik11/inputs/access-om2/input_20230515_025deg_topog/mom_025deg/ocean_hgrid.nc /g/data/ik11/inputs/access-om2/input_20230515_025deg_topog/mom_025deg/ocean_mask.nc
 
 mkdir 025deg
 mv grid.nc kmt.nc 025deg
