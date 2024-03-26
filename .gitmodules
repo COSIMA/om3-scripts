@@ -1,0 +1,3 @@
+[submodule "grid_generation/esmgrids"]
+	path = grid_generation/esmgrids
+	url = https://github.com/COSIMA/esmgrids.git
