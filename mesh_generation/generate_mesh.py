@@ -23,6 +23,7 @@
 import os
 import io
 import hashlib
+import warnings
 import subprocess
 from datetime import datetime
 
@@ -58,6 +59,28 @@ def get_git_url(file):
     ).decode("ascii").strip()
 
     return f"{url}/blob/{hash}{rel_path}"
+
+def git_status(file):
+    """
+    Return the git status of the file. Returns:
+    - "unstaged" if the file has unstaged changes
+    - "uncommitted" if the file has uncommited changes,
+    - "unpushed" if the repo has unpushed commits
+    - None otherwise
+    """
+    dirname = os.path.dirname(file)
+    status = subprocess.check_output(
+        ["git", "-C", dirname, "status", file]
+    ).decode("ascii").strip()
+
+    if "Changes not staged for commit" in status:
+        return "unstaged"
+    elif "Changes to be committed" in status:
+        return "uncommitted"
+    elif "Your branch is ahead" in status:
+        return "unpushed"
+    else:
+        return None
 
 def md5sum(path):
     """
@@ -428,6 +451,11 @@ def main():
     git_url = get_git_url(this_file)
 
     if git_url:
+        status = git_status(this_file)
+        if status in ["unstaged", "uncommitted"]:
+            warnings.warn(f"{this_file} contains uncommitted changes! Commit and push your changes before generating any production output.")
+        if status == "unpushed":
+            warnings.warn(f"There are commits that are not pushed! Push your changes before generating any production output.")
         prepend = f"Created using {git_url}: "
     else:
         prepend = f"Created using {this_file}: "
