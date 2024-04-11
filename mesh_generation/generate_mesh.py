@@ -13,6 +13,12 @@
 #   - "latlon" to generate a mesh representation from lat/lon locations
 # For more information, run `python generate_mesh.py -h`
 #
+# The run command and full github url of the current version of this script is added to the
+# metadata of the generated mesh file. This is to uniquely identify the script and inputs used
+# to generate the mesh file. To produce mesh files for sharing, ensure you are using a version
+# of this script which is committed and pushed to github. For mesh files intended for released
+# configurations, use the latest version checked in to the main branch of the github repository.
+#
 # Contact:
 #   Dougie Squire <dougal.squire@anu.edu.au>
 #
@@ -21,6 +27,9 @@
 # =========================================================================================
 
 import os
+import io
+import hashlib
+import warnings
 import subprocess
 from datetime import datetime
 
@@ -29,35 +38,68 @@ import xarray as xr
 import pandas as pd
 
 
-def is_git_repo():
+def get_git_url(file):
     """
-    Return True/False depending on whether or not the current directory is a git repo.
+    If the provided file is in a git repo, return the url to its most recent commit remote.origin.
     """
+    dirname = os.path.dirname(file)
 
-    return subprocess.call(
-        ['git', '-C', '.', 'status'],
-        stderr=subprocess.STDOUT,
-        stdout = open(os.devnull, 'w')
-    ) == 0
+    try:
+        url = subprocess.check_output(
+            ["git", "-C", dirname, "config", "--get", "remote.origin.url"]
+        ).decode("ascii").strip()
+        url = url.removesuffix('.git')
+    except subprocess.CalledProcessError:
+        return None
 
-def git_info():
-    """
-    Return the git repo origin url, relative path to this file, and latest commit hash.
-    """
+    if url.startswith("git@github.com:"):
+        url = f"https://github.com/{url.removeprefix('git@github.com:')}"
 
-    url = subprocess.check_output(
-        ["git", "remote", "get-url", "origin"]
-    ).decode('ascii').strip()
     top_level_dir = subprocess.check_output(
-        ['git', 'rev-parse', '--show-toplevel']
-    ).decode('ascii').strip()
-    rel_path = os.path.relpath(__file__, top_level_dir)
+        ["git", "-C", dirname, "rev-parse", "--show-toplevel"]
+    ).decode("ascii").strip()
+    rel_path = file.removeprefix(top_level_dir)
+
     hash = subprocess.check_output(
-        ['git', 'rev-parse', 'HEAD']
-    ).decode('ascii').strip()
+        ["git", "-C", dirname, "rev-parse", "HEAD"]
+    ).decode("ascii").strip()
 
-    return url, rel_path, hash
+    return f"{url}/blob/{hash}{rel_path}"
 
+def git_status(file):
+    """
+    Return the git status of the file. Returns:
+    - "unstaged" if the file has unstaged changes
+    - "uncommitted" if the file has uncommited changes,
+    - "unpushed" if the repo has unpushed commits
+    - None otherwise
+    """
+    dirname = os.path.dirname(file)
+    status = subprocess.check_output(
+        ["git", "-C", dirname, "status", file]
+    ).decode("ascii").strip()
+
+    if "Changes not staged for commit" in status:
+        return "unstaged"
+    elif "Changes to be committed" in status:
+        return "uncommitted"
+    elif "Your branch is ahead" in status:
+        return "unpushed"
+    else:
+        return None
+
+def md5sum(path):
+    """
+    Return the md5 hash of a provided file, reading in chunks to reduce memory usage for
+    large files.
+    From https://stackoverflow.com/a/40961519
+    """
+    length = io.DEFAULT_BUFFER_SIZE
+    md5 = hashlib.md5()
+    with io.open(path, mode="rb") as fd:
+        for chunk in iter(lambda: fd.read(length), b''):
+            md5.update(chunk)
+    return md5.hexdigest()
 
 class BaseGrid:
 
@@ -175,7 +217,10 @@ class BaseGrid:
             "created_by": f"{os.environ.get('USER')}"
         }
         if self.inputs:
-            ds.attrs["inputFile"] = ", ".join(self.inputs)
+            file_hashes = []
+            for input in self.inputs:
+                file_hashes.append(f"{input} (md5 hash: {md5sum(input)})")
+            ds.attrs["inputFile"] = ", ".join(file_hashes)
 
         # add git info to history
         if global_attrs:
@@ -390,13 +435,18 @@ def main():
     args = parser.parse_args()
     grid_type = args.grid_type
     wrap_lons = args.wrap_lons
-    grid_filename = args.grid_filename
+    grid_filename = os.path.abspath(args.grid_filename)
+    mesh_filename = os.path.abspath(args.mesh_filename)
     mask_filename = args.mask_filename
-    mesh_filename = args.mesh_filename
+
+    if mask_filename:
+        mask_filename = os.path.abspath(mask_filename)
+
+    this_file = os.path.normpath(__file__)
 
     # Add some info about how the file was generated
     runcmd = (
-        f"python3 {__file__} --grid-type={grid_type} --grid-filename={grid_filename} "
+        f"python3 {os.path.basename(this_file)} --grid-type={grid_type} --grid-filename={grid_filename} "
         f"--mesh-filename={mesh_filename}"
     )
     if mask_filename:
@@ -404,11 +454,17 @@ def main():
     if wrap_lons:
         runcmd += f" --wrap-lons"
 
-    if is_git_repo():
-        url, rel_path, hash = git_info()
-        prepend = f"Created using commit {hash} of {rel_path} in {url}: "
+    git_url = get_git_url(this_file)
+
+    if git_url:
+        status = git_status(this_file)
+        if status in ["unstaged", "uncommitted"]:
+            warnings.warn(f"{this_file} contains uncommitted changes! Commit and push your changes before generating any production output.")
+        if status == "unpushed":
+            warnings.warn(f"There are commits that are not pushed! Push your changes before generating any production output.")
+        prepend = f"Created using {git_url}: "
     else:
-        prepend = "Created using: "
+        prepend = f"Created using {this_file}: "
 
     global_attrs = {"history": prepend + runcmd}
 
