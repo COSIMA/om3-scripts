@@ -13,6 +13,12 @@
 #   - "latlon" to generate a mesh representation from lat/lon locations
 # For more information, run `python generate_mesh.py -h`
 #
+# The run command and full github url of the current version of this script is added to the
+# metadata of the generated mesh file. This is to uniquely identify the script and inputs used
+# to generate the mesh file. To produce mesh files for sharing, ensure you are using a version
+# of this script which is committed and pushed to github. For mesh files intended for released
+# configurations, use the latest version checked in to the main branch of the github repository.
+#
 # Contact:
 #   Dougie Squire <dougal.squire@anu.edu.au>
 #
