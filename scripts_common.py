@@ -1,7 +1,16 @@
+# Copyright 2024 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# =========================================================================================
+# These are common functions which can get used in any of the om3 scripts
+# =========================================================================================
+ 
+ 
 import subprocess
 import os
 from warnings import warn
-
+import io
+import hashlib
 
 def get_git_url(file):
     """
@@ -53,9 +62,13 @@ def git_status(file):
     else:
         return None
     
-def get_created_str(file) :
+def get_provenance_metadata(file, runcmd) :
     """
-    Return a string with the source control status of the file. Warn if the file is not pushed to the git upstream repository.
+    Return a string with the provenance of the file being run. Warn if the file is not pushed to the git upstream repository.
+
+    arguments:
+        file: the path to the file being run
+        runcmd: the command used to run the file (with any arguments)
     """
 
     git_url = get_git_url(file)
@@ -71,4 +84,17 @@ def get_created_str(file) :
         warn(f"{file} not under git version control! Add you file to a repository before generating any production outpout.")
         prepend = f"Created using {file}: "
 
-    return prepend
+    return prepend + runcmd
+
+def md5sum(path):
+    """
+    Return the md5 hash of a provided file, reading in chunks to reduce memory usage for
+    large files.
+    From https://stackoverflow.com/a/40961519
+    """
+    length = io.DEFAULT_BUFFER_SIZE
+    md5 = hashlib.md5()
+    with io.open(path, mode="rb") as fd:
+        for chunk in iter(lambda: fd.read(length), b''):
+            md5.update(chunk)
+    return md5.hexdigest()

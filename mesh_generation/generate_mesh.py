@@ -38,8 +38,7 @@ import sys
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
-from tools.git import get_created_str
-from tools.md5sum import *
+from scripts_common import *
 
 class BaseGrid:
 
@@ -394,9 +393,7 @@ def main():
     if wrap_lons:
         runcmd += f" --wrap-lons"
 
-    prepend = get_created_str(this_file)     #Returns "Created using {git url/file}: "
-
-    global_attrs = {"history": prepend + runcmd}
+    global_attrs = {"history": get_provenance_metadata(this_file, runcmd)}
 
     mesh = gridtype_dispatch[grid_type](grid_filename, mask_filename)
 
