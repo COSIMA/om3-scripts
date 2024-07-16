@@ -1,5 +1,7 @@
 import subprocess
 import os
+from warnings import warn
+
 
 def get_git_url(file):
     """
@@ -50,3 +52,23 @@ def git_status(file):
         return "unpushed"
     else:
         return None
+    
+def get_created_str(file) :
+    """
+    Return a string with the source control status of the file. Warn if the file is not pushed to the git upstream repository.
+    """
+
+    git_url = get_git_url(file)
+
+    if git_url:
+        status = git_status(file)
+        if status in ["unstaged", "uncommitted"]:
+            warn(f"{file} contains uncommitted changes! Commit and push your changes before generating any production output.")
+        if status == "unpushed":
+            warn(f"There are commits that are not pushed! Push your changes before generating any production output.")
+        prepend = f"Created using {git_url}: "
+    else:
+        warn(f"{file} not under git version control! Add you file to a repository before generating any production outpout.")
+        prepend = f"Created using {file}: "
+
+    return prepend

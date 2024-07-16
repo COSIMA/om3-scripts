@@ -27,7 +27,6 @@
 # =========================================================================================
 
 import os
-import warnings
 from datetime import datetime
 
 import numpy as np
@@ -39,7 +38,7 @@ import sys
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
-from tools.git import *
+from tools.git import get_created_str
 from tools.md5sum import *
 
 class BaseGrid:
@@ -395,17 +394,7 @@ def main():
     if wrap_lons:
         runcmd += f" --wrap-lons"
 
-    git_url = get_git_url(this_file)
-
-    if git_url:
-        status = git_status(this_file)
-        if status in ["unstaged", "uncommitted"]:
-            warnings.warn(f"{this_file} contains uncommitted changes! Commit and push your changes before generating any production output.")
-        if status == "unpushed":
-            warnings.warn(f"There are commits that are not pushed! Push your changes before generating any production output.")
-        prepend = f"Created using {git_url}: "
-    else:
-        prepend = f"Created using {this_file}: "
+    prepend = get_created_str(this_file)     #Returns "Created using {git url/file}: "
 
     global_attrs = {"history": prepend + runcmd}
 
