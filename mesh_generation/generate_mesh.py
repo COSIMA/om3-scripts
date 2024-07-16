@@ -27,83 +27,33 @@
 # =========================================================================================
 
 import os
-import io
-import hashlib
-import warnings
-import subprocess
 from datetime import datetime
 
 import numpy as np
 import xarray as xr
 import pandas as pd
 
+from pathlib import Path
+import sys
 
-def get_git_url(file):
-    """
-    If the provided file is in a git repo, return the url to its most recent commit remote.origin.
-    """
-    dirname = os.path.dirname(file)
+path_root = Path(__file__).parents[1]
+sys.path.append(str(path_root))
 
-    try:
-        url = subprocess.check_output(
-            ["git", "-C", dirname, "config", "--get", "remote.origin.url"]
-        ).decode("ascii").strip()
-        url = url.removesuffix('.git')
-    except subprocess.CalledProcessError:
-        return None
+from scripts_common import get_provenance_metadata, md5sum
 
-    if url.startswith("git@github.com:"):
-        url = f"https://github.com/{url.removeprefix('git@github.com:')}"
-
-    top_level_dir = subprocess.check_output(
-        ["git", "-C", dirname, "rev-parse", "--show-toplevel"]
-    ).decode("ascii").strip()
-    rel_path = file.removeprefix(top_level_dir)
-
-    hash = subprocess.check_output(
-        ["git", "-C", dirname, "rev-parse", "HEAD"]
-    ).decode("ascii").strip()
-
-    return f"{url}/blob/{hash}{rel_path}"
-
-def git_status(file):
-    """
-    Return the git status of the file. Returns:
-    - "unstaged" if the file has unstaged changes
-    - "uncommitted" if the file has uncommited changes,
-    - "unpushed" if the repo has unpushed commits
-    - None otherwise
-    """
-    dirname = os.path.dirname(file)
-    status = subprocess.check_output(
-        ["git", "-C", dirname, "status", file]
-    ).decode("ascii").strip()
-
-    if "Changes not staged for commit" in status:
-        return "unstaged"
-    elif "Changes to be committed" in status:
-        return "uncommitted"
-    elif "Your branch is ahead" in status:
-        return "unpushed"
-    else:
-        return None
-
-def md5sum(path):
-    """
-    Return the md5 hash of a provided file, reading in chunks to reduce memory usage for
-    large files.
-    From https://stackoverflow.com/a/40961519
-    """
-    length = io.DEFAULT_BUFFER_SIZE
-    md5 = hashlib.md5()
-    with io.open(path, mode="rb") as fd:
-        for chunk in iter(lambda: fd.read(length), b''):
-            md5.update(chunk)
-    return md5.hexdigest()
 
 class BaseGrid:
 
-    def __init__(self, x_centres, y_centres, x_corners, y_corners, area=None, mask=None, inputs=None):
+    def __init__(
+        self,
+        x_centres,
+        y_centres,
+        x_corners,
+        y_corners,
+        area=None,
+        mask=None,
+        inputs=None,
+    ):
         """
         Initialise a mesh object
 
@@ -161,8 +111,10 @@ class BaseGrid:
 
         # calculate indexes of corner nodes per element
         elem_conn = (
-            corners_df.groupby(['x','y'], sort=False).ngroup()+1
-        ).to_numpy().reshape((-1,4))
+            (corners_df.groupby(["x", "y"], sort=False).ngroup() + 1)
+            .to_numpy()
+            .reshape((-1, 4))
+        )
 
         # calculate corner nodes
         nodes = corners_df.drop_duplicates().to_numpy()
@@ -173,48 +125,48 @@ class BaseGrid:
 
         # create a new dataset for the mesh
         ds = xr.Dataset()
-        ds['nodeCoords'] = xr.DataArray(
+        ds["nodeCoords"] = xr.DataArray(
             nodes.astype(np.float64),
-            dims=('nodeCount', 'coordDim'),
-            attrs={'units': 'degrees'}
+            dims=("nodeCount", "coordDim"),
+            attrs={"units": "degrees"},
         )
-        ds['elementConn'] = xr.DataArray(
+        ds["elementConn"] = xr.DataArray(
             elem_conn.astype(np.int32),
-            dims=('elementCount', 'maxNodePElement'),
-            attrs={'long_name': 'Node indices that define the element connectivity'}
+            dims=("elementCount", "maxNodePElement"),
+            attrs={"long_name": "Node indices that define the element connectivity"},
         )
-        ds['numElementConn'] = xr.DataArray(
+        ds["numElementConn"] = xr.DataArray(
             4 * np.ones_like(self.x_centres, dtype=np.int32),
-            dims=('elementCount'),
-            attrs={'long_name': 'Number of nodes per element'}
+            dims=("elementCount"),
+            attrs={"long_name": "Number of nodes per element"},
         )
-        ds['centerCoords'] = xr.DataArray(
+        ds["centerCoords"] = xr.DataArray(
             centres.astype(np.float64),
-            dims=('elementCount', 'coordDim'),
-            attrs={'units': 'degrees'}
+            dims=("elementCount", "coordDim"),
+            attrs={"units": "degrees"},
         )
 
         ds["elementMask"] = xr.DataArray(
             self.mask.astype(np.int8),
-            dims=('elementCount'),
+            dims=("elementCount"),
         )
 
         if self.area is not None:
             ds["elementArea"] = xr.DataArray(
                 self.area.astype(np.float64),
-                dims=('elementCount'),
+                dims=("elementCount"),
             )
 
         # force no _FillValue (for now)
         for v in ds.variables:
-            if '_FillValue' not in ds[v].encoding:
-                ds[v].encoding['_FillValue'] = None
+            if "_FillValue" not in ds[v].encoding:
+                ds[v].encoding["_FillValue"] = None
 
         # add global attributes
         ds.attrs = {
-            "gridType" : "unstructured mesh",
+            "gridType": "unstructured mesh",
             "timeGenerated": f"{datetime.now()}",
-            "created_by": f"{os.environ.get('USER')}"
+            "created_by": f"{os.environ.get('USER')}",
         }
         if self.inputs:
             file_hashes = []
@@ -236,7 +188,9 @@ class BaseGrid:
         """
 
         if self.mesh is None:
-            raise ValueError("Before writing, you must first create the mesh object using self.create_mesh()")
+            raise ValueError(
+                "Before writing, you must first create the mesh object using self.create_mesh()"
+            )
 
         self.mesh.to_netcdf(filename)
 
@@ -278,7 +232,9 @@ class MomSuperGrid(BaseGrid):
         lr = x[:-2:2, 2::2]
         ul = x[2::2, :-2:2]
         ur = x[2::2, 2::2]
-        x_corners = np.stack((ll.flatten(), lr.flatten(), ur.flatten(), ul.flatten()), axis=1)
+        x_corners = np.stack(
+            (ll.flatten(), lr.flatten(), ur.flatten(), ul.flatten()), axis=1
+        )
         x_centres = x[1:-1:2, 1:-1:2].flatten()
 
         # prep y corners
@@ -286,7 +242,9 @@ class MomSuperGrid(BaseGrid):
         lr = y[:-2:2, 2::2]
         ul = y[2::2, :-2:2]
         ur = y[2::2, 2::2]
-        y_corners = np.stack((ll.flatten(), lr.flatten(), ur.flatten(), ul.flatten()), axis=1)
+        y_corners = np.stack(
+            (ll.flatten(), lr.flatten(), ur.flatten(), ul.flatten()), axis=1
+        )
         y_centres = y[1:-1:2, 1:-1:2].flatten()
 
         super().__init__(
@@ -302,7 +260,14 @@ class MomSuperGrid(BaseGrid):
 
 class LatLonGrid(BaseGrid):
 
-    def __init__(self, grid_filename, mask_filename=None, lon_dim="lon", lat_dim="lat", area_var="area"):
+    def __init__(
+        self,
+        grid_filename,
+        mask_filename=None,
+        lon_dim="lon",
+        lat_dim="lat",
+        area_var="area",
+    ):
         """
         Initialise a mesh representation from lat/lon locations
 
@@ -337,17 +302,23 @@ class LatLonGrid(BaseGrid):
         x_centres = grid[lon_dim].values
         y_centres = grid[lat_dim].values
 
-        has_lon_bounds = hasattr(grid[lon_dim], "bounds") and grid[lon_dim].bounds in grid
-        has_lat_bounds = hasattr(grid[lat_dim], "bounds") and grid[lat_dim].bounds in grid
+        has_lon_bounds = (
+            hasattr(grid[lon_dim], "bounds") and grid[lon_dim].bounds in grid
+        )
+        has_lat_bounds = (
+            hasattr(grid[lat_dim], "bounds") and grid[lat_dim].bounds in grid
+        )
 
         if has_lon_bounds:
             lon_bnds = grid[getattr(grid[lon_dim], "bounds")]
 
             # flip and concat for ll, lr, ur, ul
-            x_corners = np.concatenate([lon_bnds.values, lon_bnds[...,::-1].values], axis=-1)
+            x_corners = np.concatenate(
+                [lon_bnds.values, lon_bnds[..., ::-1].values], axis=-1
+            )
         else:
             # Average neighbouring cells to get bounds
-            ext = np.pad(x_centres, (1,),  mode='reflect', reflect_type='odd')
+            ext = np.pad(x_centres, (1,), mode="reflect", reflect_type="odd")
             bnds = (ext[:-1] + ext[1:]) / 2
 
             # stack as ll, lr, ur, ul
@@ -359,7 +330,7 @@ class LatLonGrid(BaseGrid):
             y_corners = np.repeat(lat_bnds.values, 2, axis=1)
         else:
             # Average neighbouring cells to get bounds
-            ext = np.pad(y_centres, (1,),  mode='reflect', reflect_type='odd')
+            ext = np.pad(y_centres, (1,), mode="reflect", reflect_type="odd")
             bnds = (ext[:-1] + ext[1:]) / 2
 
             # stack as ll, lr, ur, ul
@@ -367,16 +338,14 @@ class LatLonGrid(BaseGrid):
 
         # broadcast corners
         x_corners, y_corners = np.broadcast_arrays(
-            np.expand_dims(x_corners, axis=0),
-            np.expand_dims(y_corners, axis=1)
+            np.expand_dims(x_corners, axis=0), np.expand_dims(y_corners, axis=1)
         )
         x_corners = x_corners.reshape(-1, 4)
         y_corners = y_corners.reshape(-1, 4)
 
         # broadcast centres
         x_centres, y_centres = np.broadcast_arrays(
-            np.expand_dims(x_centres, axis=0),
-            np.expand_dims(y_centres, axis=1)
+            np.expand_dims(x_centres, axis=0), np.expand_dims(y_centres, axis=1)
         )
         x_centres = x_centres.flatten()
         y_centres = y_centres.flatten()
@@ -391,10 +360,12 @@ class LatLonGrid(BaseGrid):
             inputs=inputs,
         )
 
+
 gridtype_dispatch = {
     "latlon": LatLonGrid,
     "mom": MomSuperGrid,
 }
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -405,13 +376,13 @@ def main():
         "--grid-type",
         choices=gridtype_dispatch.keys(),
         required=True,
-        help='The type of grid in the netcdf file.',
+        help="The type of grid in the netcdf file.",
     )
     parser.add_argument(
         "--wrap-lons",
         default=False,
         action="store_true",
-        help="Wrap longitude values into the range between 0 and 360."
+        help="Wrap longitude values into the range between 0 and 360.",
     )
     parser.add_argument(
         "--grid-filename",
@@ -454,23 +425,14 @@ def main():
     if wrap_lons:
         runcmd += f" --wrap-lons"
 
-    git_url = get_git_url(this_file)
-
-    if git_url:
-        status = git_status(this_file)
-        if status in ["unstaged", "uncommitted"]:
-            warnings.warn(f"{this_file} contains uncommitted changes! Commit and push your changes before generating any production output.")
-        if status == "unpushed":
-            warnings.warn(f"There are commits that are not pushed! Push your changes before generating any production output.")
-        prepend = f"Created using {git_url}: "
-    else:
-        prepend = f"Created using {this_file}: "
-
-    global_attrs = {"history": prepend + runcmd}
+    global_attrs = {"history": get_provenance_metadata(this_file, runcmd)}
 
     mesh = gridtype_dispatch[grid_type](grid_filename, mask_filename)
 
-    mesh.create_mesh(wrap_lons=wrap_lons, global_attrs=global_attrs).write(mesh_filename)
+    mesh.create_mesh(wrap_lons=wrap_lons, global_attrs=global_attrs).write(
+        mesh_filename
+    )
+
 
 if __name__ == "__main__":
     import argparse
