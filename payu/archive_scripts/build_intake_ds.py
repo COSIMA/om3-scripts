@@ -8,20 +8,20 @@
 #     - conda/analysis
 
 from access_nri_intake.source import builders
-from os import environ,getcwd
+from os import getcwd
 
 from pathlib import Path
 import sys
+
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from tools.git import *
-from tools.md5sum import *
+from scripts_common import get_provenance_metadata, md5sum
 
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap
 
-METADATA_FILENAME = 'metadata.yaml'
+METADATA_FILENAME = "metadata.yaml"
 UUID_FIELD = "experiment_uuid"
 
 builder = builders.AccessOm3Builder(path="archive/")
@@ -43,11 +43,15 @@ else:
 
 # Check git status of this .py file
 this_file = os.path.normpath(__file__)
-created_using = get_created_str(this_file)
+
+runcmd = f"python3 {os.path.basename(this_file)}"
+
+# Get string "Created using $file: $command"
+provenance = get_provenance_metadata(this_file, runcmd)
 
 # Save the datastore to a file (json)
 builder.save(
     name=f"intake_datastore_{uuid[0:8]}",
-    description=f"intake_datastore for experiment {uuid}, in folder {getcwd()}. {created_using}. (md5 hash: {md5sum(this_file)})",
+    description=f"intake_datastore for experiment {uuid}, in folder {getcwd()}. {provenance}. (md5 hash: {md5sum(this_file)})",
     directory="archive/",
 )
