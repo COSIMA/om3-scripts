@@ -54,7 +54,7 @@ fi
 
 for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
    #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
-   if [ -f $f] && [ -f ${f/-01.nc/-28.nc} ]; then 
+   if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ]; then 
       
       #concat daily files for this month
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} ${f/-01.nc/-daily.nc}

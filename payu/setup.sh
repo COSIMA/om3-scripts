@@ -1,3 +1,3 @@
 #!/usr/bin/bash -i
 
-source setup_scripts/setup_cice_restarts.sh
+source $(dirname "$0")/setup_scripts/setup_cice_restarts.sh

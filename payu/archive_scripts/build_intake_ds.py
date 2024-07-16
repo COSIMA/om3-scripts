@@ -34,7 +34,7 @@ if __name__ == '__main__':
         workers = 48
     client = Client(
         n_workers=workers , 
-        threads_per_worker=1, 
+        threads_per_worker=1, # per https://github.com/pydata/xarray/issues/7079 netcdf doesn't like threads
         memory_limit=mem
     )
 
