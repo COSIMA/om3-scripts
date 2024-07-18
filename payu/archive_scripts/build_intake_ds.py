@@ -8,7 +8,7 @@
 #     - conda/analysis
 
 from access_nri_intake.source import builders
-from os import getcwd
+import os
 
 from pathlib import Path
 import sys
@@ -52,6 +52,6 @@ provenance = get_provenance_metadata(this_file, runcmd)
 # Save the datastore to a file (json)
 builder.save(
     name=f"intake_datastore_{uuid[0:8]}",
-    description=f"intake_datastore for experiment {uuid}, in folder {getcwd()}. {provenance}. (md5 hash: {md5sum(this_file)})",
+    description=f"intake_datastore for experiment {uuid}, in folder {os.getcwd()}. {provenance}. (md5 hash: {md5sum(this_file)})",
     directory="archive/",
 )

@@ -10,7 +10,6 @@
 
 shopt -s extglob
 
-
 Help()
 {
    # Display Help
@@ -55,10 +54,13 @@ fi
 for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
    #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
    if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ]; then 
+
+      output_f=${f/-01.nc/.nc} #remove day in date string
+      output_f=${output_f/.cice.h./.cice.h.day.} #add word day to filename
       
       #concat daily files for this month
-      echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} ${f/-01.nc/-daily.nc}
-      ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} ${f/-01.nc/-daily.nc} 
+      echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} ${f/-01.nc/.nc}
+      ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
