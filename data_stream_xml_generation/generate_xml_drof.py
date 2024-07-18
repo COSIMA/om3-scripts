@@ -57,7 +57,11 @@ for stream_name, var_prefix, var_suffix in stream_info_data:
 
     datafiles = SubElement(stream_info, "datafiles")
     datavars = SubElement(stream_info, "datavars")
-    SubElement(
+
+    if year_first == year_last:
+        SubElement(stream_info, "offset").text = "0" #RYF starts at midnight
+    else:    
+        SubElement(
         stream_info, "offset"
     ).text = "-43200"  # shift backwards from noon to midnight to match RYF
 
