@@ -78,18 +78,15 @@ for stream_name in stream_info_names:
     datafiles = SubElement(stream_info, "datafiles")
     datavars = SubElement(stream_info, "datavars")
 
-    if stream_name in [
+    if stream_name in ([
         "CORE_IAF_JRA55do.PRSN",
         "CORE_IAF_JRA55do.PRRN",
         "CORE_IAF_JRA55do.LWDN",
         "CORE_IAF_JRA55do.SWDN",
-    ]:
-        if year_first == year_last:
-            SubElement(stream_info, "offset").text = "0"  #RYF starts at midnight
-        else:    
-            SubElement(
+    ]) and (year_first != year_last): 
+        SubElement(
             stream_info, "offset"
-            ).text = "-5400"  # shift back 1.5hr to match RYF
+        ).text = "-5400"  # shift back 1.5hr to match RYF        
     else:
         SubElement(stream_info, "offset").text = "0"
 
