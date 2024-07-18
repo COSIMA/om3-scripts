@@ -24,11 +24,20 @@ def daily_files(tmp_path):
     nt = 365
 
     da = xr.DataArray(
-        np.random.rand(nx, ny, nt),
-        dims=["x", "y", "time"],
-        coords={"time": pd.date_range("2010-01-01", freq="D", periods=nt)},
+        np.random.rand(nt, nx, ny),
+        dims=[
+            "time",
+            "x",
+            "y",
+        ],  # there is a bug in nco that means time needs to be the first dimension!
+        coords={"time": pd.date_range("2010-01-01 12:00", freq="D", periods=nt)},
     )
     ds = da.to_dataset(name="aice")
+
+    # Setting these would be more like the source data, but maybe it doesn't matter!
+    # ds.time.encoding['units'] = 'Days since 01/01/2000 00:00:00 UTC'
+    # ds.time.encoding['calendar'] = 'gregorian'
+    # ds.time.encoding['dtype'] = 'float'
 
     out_dir = f"{tmp_path}/archive/output000/"
     paths = [f"{out_dir}access-om3.cice.h.{str(t.values)[0:10]}.nc" for t in ds.time]
