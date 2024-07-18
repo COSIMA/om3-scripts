@@ -35,7 +35,7 @@ def daily_files(tmp_path):
     datasets = [ds.sel(time=slice(t, t)) for t in ds.time]
 
     makedirs(out_dir)
-    xr.save_mfdataset(datasets, paths)
+    xr.save_mfdataset(datasets, paths, unlimited_dims=["time"])
 
     return out_dir
 

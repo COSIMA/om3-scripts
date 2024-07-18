@@ -59,7 +59,7 @@ for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
       output_f=${output_f/.cice.h./.cice.h.day.} #add word day to filename
       
       #concat daily files for this month
-      echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} ${f/-01.nc/.nc}
+      echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       
       if [[ $? == 0 ]]; then 
