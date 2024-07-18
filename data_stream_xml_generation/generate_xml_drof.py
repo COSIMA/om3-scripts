@@ -14,9 +14,16 @@
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
 import sys
+from datetime import datetime
+from pathlib import Path
+
+path_root = Path(__file__).parents[1]
+sys.path.append(str(path_root))
+
+from scripts_common import get_provenance_metadata, md5sum
 
 if len(sys.argv) != 3:
-    print("Usage: python generate_xml_drof.py year_first year_last year_align")
+    print("Usage: python generate_xml_drof.py year_first year_last")
     sys.exit(1)
 
 try:
@@ -30,6 +37,17 @@ year_align = year_first
 
 # Create the root element
 root = Element("file", id="stream", version="2.0")
+
+# Obtain metadata
+this_file = sys.argv[0]
+runcmd = " ".join(sys.argv)
+metadata_info = get_provenance_metadata(this_file, runcmd)
+
+# Add metadata
+metadata = SubElement(root, "metadata")
+SubElement(metadata, "File_type").text = "DROF xml file provides river runoff data"
+SubElement(metadata, "date_generated").text = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+SubElement(metadata, "history").text = metadata_info
 
 # Define the stream info names and corresponding var names
 stream_info_data = [
@@ -87,3 +105,4 @@ xml_str = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
 # Write the XML content to a file
 with open("drof.streams.xml", "w") as xml_file:
     xml_file.write(xml_str)
+
