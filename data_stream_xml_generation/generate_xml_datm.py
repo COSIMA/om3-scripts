@@ -48,7 +48,9 @@ metadata_info = get_provenance_metadata(this_file, runcmd)
 # Add metadata
 metadata = SubElement(root, "metadata")
 SubElement(metadata, "File_type").text = "DATM xml file provides forcing data"
-SubElement(metadata, "date_generated").text = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+SubElement(metadata, "date_generated").text = datetime.now().strftime(
+    "%Y-%m-%d %H:%M:%S"
+)
 SubElement(metadata, "history").text = metadata_info
 
 # Define the stream info names and corresponding var names
@@ -96,15 +98,17 @@ for stream_name in stream_info_names:
     datafiles = SubElement(stream_info, "datafiles")
     datavars = SubElement(stream_info, "datavars")
 
-    if stream_name in ([
-        "CORE_IAF_JRA55do.PRSN",
-        "CORE_IAF_JRA55do.PRRN",
-        "CORE_IAF_JRA55do.LWDN",
-        "CORE_IAF_JRA55do.SWDN",
-    ]) and (year_first != year_last): 
-        SubElement(
-            stream_info, "offset"
-        ).text = "-5400"  # shift back 1.5hr to match RYF
+    if stream_name in (
+        [
+            "CORE_IAF_JRA55do.PRSN",
+            "CORE_IAF_JRA55do.PRRN",
+            "CORE_IAF_JRA55do.LWDN",
+            "CORE_IAF_JRA55do.SWDN",
+        ]
+    ) and (year_first != year_last):
+        SubElement(stream_info, "offset").text = (
+            "-5400"  # shift back 1.5hr to match RYF
+        )
     else:
         SubElement(stream_info, "offset").text = "0"
 

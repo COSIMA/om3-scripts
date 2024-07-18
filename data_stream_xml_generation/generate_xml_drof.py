@@ -46,7 +46,9 @@ metadata_info = get_provenance_metadata(this_file, runcmd)
 # Add metadata
 metadata = SubElement(root, "metadata")
 SubElement(metadata, "File_type").text = "DROF xml file provides river runoff data"
-SubElement(metadata, "date_generated").text = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+SubElement(metadata, "date_generated").text = datetime.now().strftime(
+    "%Y-%m-%d %H:%M:%S"
+)
 SubElement(metadata, "history").text = metadata_info
 
 # Define the stream info names and corresponding var names
@@ -77,11 +79,11 @@ for stream_name, var_prefix, var_suffix in stream_info_data:
     datavars = SubElement(stream_info, "datavars")
 
     if year_first == year_last:
-        SubElement(stream_info, "offset").text = "0" #RYF starts at midnight
-    else:    
-        SubElement(
-        stream_info, "offset"
-    ).text = "-43200"  # shift backwards from noon to midnight to match RYF
+        SubElement(stream_info, "offset").text = "0"  # RYF starts at midnight
+    else:
+        SubElement(stream_info, "offset").text = (
+            "-43200"  # shift backwards from noon to midnight to match RYF
+        )
 
     var_element = SubElement(datavars, "var")
     var_element.text = f"{var_prefix} {var_suffix}"
