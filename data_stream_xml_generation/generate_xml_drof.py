@@ -105,4 +105,3 @@ xml_str = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
 # Write the XML content to a file
 with open("drof.streams.xml", "w") as xml_file:
     xml_file.write(xml_str)
-
