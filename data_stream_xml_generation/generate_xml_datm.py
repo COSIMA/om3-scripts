@@ -21,7 +21,7 @@ from pathlib import Path
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
-from scripts_common import get_provenance_metadata, md5sum
+from scripts_common import get_provenance_metadata
 
 if len(sys.argv) != 3:
     print("Usage: python generate_xml_datm.py year_first year_last")
