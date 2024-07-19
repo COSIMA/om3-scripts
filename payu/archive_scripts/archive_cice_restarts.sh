@@ -1,4 +1,6 @@
 #!/usr/bin/bash -i
+# Copyright 2024 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# SPDX-License-Identifier: Apache-2.0
 # clean up cice_restarts.sh
 
 if [ -f archive/output*/input/iced.1900-01-01-10800.nc ] 
