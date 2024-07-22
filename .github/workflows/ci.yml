@@ -21,7 +21,7 @@ jobs:
       with:
         options: "--check --verbose --diff"
 
-  build:
+  test:
     needs: formatting
     runs-on: ubuntu-latest
     strategy:
