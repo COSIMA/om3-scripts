@@ -85,7 +85,7 @@ def get_provenance_metadata(file, runcmd):
         runcmd: the command used to run the file (with any arguments)
     """
 
-    prepend = f"Created by {os.environ['USER']}, on {datetime.now().strftime('%Y-%m-%d')}, using " 
+    prepend = f"Created by {os.environ['USER']} on {datetime.now().strftime('%Y-%m-%d')}, using " 
 
     git_url = get_git_url(file)
 
@@ -104,7 +104,7 @@ def get_provenance_metadata(file, runcmd):
         warn(
             f"{file} not under git version control! Add your file to a repository before generating any production output."
         )
-        prepend += f"Created using {file}: "
+        prepend += f"{file}: "
     
     return prepend + runcmd
 
