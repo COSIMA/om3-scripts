@@ -76,6 +76,24 @@ def git_status(file):
         return None
 
 
+def username(file):
+    """
+    Return a string with the username of the current user. If possible, return the git username, otherwise return the nci username.
+    """
+    dirname = os.path.dirname(file)
+
+    try:
+        name = (
+            subprocess.check_output(["git", "-C", dirname, "config", "user.name"])
+            .decode("ascii")
+            .strip()
+        )
+    except subprocess.CalledProcessError:
+        name = os.environ["USER"]
+
+    return name
+
+
 def get_provenance_metadata(file, runcmd):
     """
     Return a string with the provenance of the file being run. Warn if the file is not pushed to the git upstream repository.
@@ -85,7 +103,9 @@ def get_provenance_metadata(file, runcmd):
         runcmd: the command used to run the file (with any arguments)
     """
 
-    prepend = f"Created by {os.environ['USER']} on {datetime.now().strftime('%Y-%m-%d')}, using " 
+    prepend = (
+        f"Created by {username(file)} on {datetime.now().strftime('%Y-%m-%d')}, using "
+    )
 
     git_url = get_git_url(file)
 
@@ -105,7 +125,7 @@ def get_provenance_metadata(file, runcmd):
             f"{file} not under git version control! Add your file to a repository before generating any production output."
         )
         prepend += f"{file}: "
-    
+
     return prepend + runcmd
 
 
