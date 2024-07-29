@@ -78,18 +78,21 @@ def git_status(file):
 
 def username(file):
     """
-    Return a string with the username of the current user. If possible, return the git username, otherwise return the nci username.
+    Return a string with the username of the current user. If possible, include the git username also.
     """
     dirname = os.path.dirname(file)
 
+    name = os.environ["USER"]
+
     try:
-        name = (
+        gitname = (
             subprocess.check_output(["git", "-C", dirname, "config", "user.name"])
             .decode("ascii")
             .strip()
         )
+        name = f"{name} ({gitname})"
     except subprocess.CalledProcessError:
-        name = os.environ["USER"]
+        pass
 
     return name
 
