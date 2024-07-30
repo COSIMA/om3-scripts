@@ -7,6 +7,9 @@ from os import makedirs, chdir
 from subprocess import run
 from pathlib import Path
 
+scripts_base = Path(__file__).parents[2]
+run_str = f"{scripts_base}/payu_config/archive_scripts/concat_ice_daily.sh"
+
 
 def assert_file_exists(p):
     if not Path(p).resolve().is_file():
@@ -81,15 +84,14 @@ def test_true_case(daily_files, use_dir, nmonths, tmp_path):
 
     chdir(tmp_path)
     output_dir = Path(daily_files[0]).parents[0]
-    scripts_base = Path(__file__).parents[2]
 
     if not use_dir:  # default path
-        run([f"{scripts_base}/payu/archive_scripts/concat_ice_daily.sh"])
+        run([run_str])
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
     else:  # provide path
         run(
             [
-                f"{scripts_base}/payu/archive_scripts/concat_ice_daily.sh",
+                run_str,
                 "-d",
                 output_dir,
             ]
@@ -122,8 +124,7 @@ def test_no_concat_case(daily_files, tmp_path):
     chdir(tmp_path)
     output_dir = Path(daily_files[0]).parents[0]
 
-    scripts_base = Path(__file__).parents[2]
-    run([f"{scripts_base}/payu/archive_scripts/concat_ice_daily.sh"])
+    run([run_str])
     expected_months = pd.date_range("2010-01-01", freq="ME", periods=1)
 
     monthly_paths = [

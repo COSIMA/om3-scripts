@@ -3,3 +3,6 @@ pytest
 xarray
 pandas
 netCDF4
+access-nri-intake
+payu
+setuptools
