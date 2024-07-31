@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     # Save the datastore to a file (json)
     builder.save(
-        name=f"intake_esm_ds",
+        name="intake_esm_ds",
         description=description(),
         directory=ARCHIVE_PATH,
     )
