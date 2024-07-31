@@ -5,3 +5,4 @@ pandas
 netCDF4
 access-nri-intake
 setuptools
+ruamel.yaml
