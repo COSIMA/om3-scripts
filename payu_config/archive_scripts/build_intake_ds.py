@@ -63,7 +63,6 @@ if __name__ == "__main__":
     # Log invalid assets
     builder.invalid_assets
 
-    # Save the datastore to a file (json)
     builder.save(
         name="intake_esm_ds",
         description=description(),
