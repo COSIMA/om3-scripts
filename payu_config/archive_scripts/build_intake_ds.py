@@ -8,10 +8,12 @@
 #     - conda/analysis
 
 from access_nri_intake.source import builders
-from payu.metadata import Metadata
 import os
 import sys
 from pathlib import Path
+from warnings import warn
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -24,8 +26,17 @@ ARCHIVE_PATH = "archive"
 
 
 def description():
+
     # Get experiment uuid
-    uuid = Metadata(laboratory_archive_path=ARCHIVE_PATH).uuid
+    # follows https://github.com/payu-org/payu/blob/ef55e93fe23fcde19024479c0dc4112dcdf6603f/payu/metadata.py#L90
+    metadata_filename = Path(METADATA_FILENAME)
+    if metadata_filename.exists():
+        metadata = CommentedMap()
+        metadata = YAML().load(metadata_filename)
+        uuid = metadata.get(UUID_FIELD, None)
+    else:
+        warn(f"{METADATA_FILENAME} not found in archive folder")
+        uuid = False
 
     # Check git status of this .py file
     this_file = os.path.normpath(__file__)
