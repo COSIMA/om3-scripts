@@ -11,6 +11,7 @@ import os
 from warnings import warn
 import io
 import hashlib
+from datetime import datetime
 
 
 def get_git_url(file):
@@ -75,6 +76,27 @@ def git_status(file):
         return None
 
 
+def username(file):
+    """
+    Return a string with the username of the current user. If possible, include the git username also.
+    """
+    dirname = os.path.dirname(file)
+
+    name = os.environ["USER"]
+
+    try:
+        gitname = (
+            subprocess.check_output(["git", "-C", dirname, "config", "user.name"])
+            .decode("ascii")
+            .strip()
+        )
+        name = f"{name} ({gitname})"
+    except subprocess.CalledProcessError:
+        pass
+
+    return name
+
+
 def get_provenance_metadata(file, runcmd):
     """
     Return a string with the provenance of the file being run. Warn if the file is not pushed to the git upstream repository.
@@ -83,6 +105,10 @@ def get_provenance_metadata(file, runcmd):
         file: the path to the file being run
         runcmd: the command used to run the file (with any arguments)
     """
+
+    prepend = (
+        f"Created by {username(file)} on {datetime.now().strftime('%Y-%m-%d')}, using "
+    )
 
     git_url = get_git_url(file)
 
@@ -96,12 +122,12 @@ def get_provenance_metadata(file, runcmd):
             warn(
                 f"There are commits that are not pushed! Push your changes before generating any production output."
             )
-        prepend = f"Created using {git_url}: "
+        prepend += f"{git_url}: "
     else:
         warn(
-            f"{file} not under git version control! Add you file to a repository before generating any production outpout."
+            f"{file} not under git version control! Add your file to a repository before generating any production output."
         )
-        prepend = f"Created using {file}: "
+        prepend += f"{file}: "
 
     return prepend + runcmd
 
