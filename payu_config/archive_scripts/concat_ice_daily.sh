@@ -58,6 +58,7 @@ for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
       output_f=${f/-01.nc/.nc} #remove day in date string
       
       #concat daily files for this month
+      echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       

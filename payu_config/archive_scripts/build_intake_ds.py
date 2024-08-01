@@ -56,7 +56,9 @@ def description():
 
 if __name__ == "__main__":
 
-    builder = builders.AccessOm3Builder(path="archive/")
+    builder = builders.AccessOm3Builder(path=ARCHIVE_PATH)
+
+    print("LOG: Building intake-esm datastore")
 
     builder.build()
 
