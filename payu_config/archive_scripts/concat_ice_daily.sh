@@ -56,7 +56,6 @@ for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
    if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ]; then 
 
       output_f=${f/-01.nc/.nc} #remove day in date string
-      output_f=${output_f/.cice.h./.cice.h.1day.} #add word day to filename
       
       #concat daily files for this month
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
