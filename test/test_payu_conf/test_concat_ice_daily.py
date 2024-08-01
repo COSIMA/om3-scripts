@@ -100,7 +100,7 @@ def test_true_case(daily_files, use_dir, nmonths, tmp_path):
 
     # valid output filenames
     monthly_paths = [
-        f"{output_dir}/access-om3.cice.h.1day.{str(t)[0:7]}.nc" for t in expected_months
+        f"{output_dir}/access-om3.cice.h.{str(t)[0:7]}.nc" for t in expected_months
     ]
 
     for p in monthly_paths[0:nmonths]:
@@ -128,7 +128,7 @@ def test_no_concat_case(daily_files, tmp_path):
     expected_months = pd.date_range("2010-01-01", freq="ME", periods=1)
 
     monthly_paths = [
-        f"{output_dir}/access-om3.cice.h.1day.{str(t)[0:7]}.nc" for t in expected_months
+        f"{output_dir}/access-om3.cice.h.{str(t)[0:7]}.nc" for t in expected_months
     ]
 
     for p in daily_files:
