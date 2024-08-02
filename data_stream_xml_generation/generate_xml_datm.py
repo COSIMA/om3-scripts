@@ -92,7 +92,7 @@ for stream_name in stream_info_names:
     SubElement(stream_info, "year_last").text = str(year_last)
     SubElement(stream_info, "year_align").text = str(year_align)
     SubElement(stream_info, "vectors").text = "null"
-    SubElement(stream_info, "meshfile").text = "./input/JRA55do-ESMFmesh.nc"
+    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-ESMFmesh.nc"
     SubElement(stream_info, "lev_dimname").text = "null"
 
     datafiles = SubElement(stream_info, "datafiles")
@@ -131,7 +131,7 @@ for stream_name in stream_info_names:
         if year_first == year_last:
             file_element = SubElement(datafiles, "file")
             file_element.text = (
-                f"./input/RYF.{var_name_parts[0]}.{year+90}_{year + 90 + 1}.nc"
+                f"./INPUT/RYF.{var_name_parts[0]}.{year+90}_{year + 90 + 1}.nc"
             )
         else:
             file_element = SubElement(datafiles, "file")
@@ -143,14 +143,14 @@ for stream_name in stream_info_names:
                 "CORE_IAF_JRA55do.V_10",
             ]:
                 if year != 2019:
-                    file_element.text = f"./input/atmos/3hr/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010130-{year}12312230.nc"
+                    file_element.text = f"./INPUT/atmos/3hr/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010130-{year}12312230.nc"
                 else:
-                    file_element.text = f"./input/atmos/3hr/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010130-{year}01052230.nc"
+                    file_element.text = f"./INPUT/atmos/3hr/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010130-{year}01052230.nc"
             else:
                 if year != 2019:
-                    file_element.text = f"./input/atmos/3hrPt/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010000-{year}12312100.nc"
+                    file_element.text = f"./INPUT/atmos/3hrPt/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010000-{year}12312100.nc"
                 else:
-                    file_element.text = f"./input/atmos/3hrPt/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010000-{year}01052100.nc"
+                    file_element.text = f"./INPUT/atmos/3hrPt/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010000-{year}01052100.nc"
 
 
 # Convert the XML to a nicely formatted string

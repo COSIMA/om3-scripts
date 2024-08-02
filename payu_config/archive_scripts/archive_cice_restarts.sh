@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # clean up cice_restarts.sh
 
-if [ -f archive/output*/input/iced.1900-01-01-10800.nc ] 
+if [ -f archive/output*/INPUT/iced.1900-01-01-10800.nc ]
 then
-rm archive/output*/input/iced.1900-01-01-10800.nc
+rm archive/output*/INPUT/iced.1900-01-01-10800.nc
 return 0
 fi
 

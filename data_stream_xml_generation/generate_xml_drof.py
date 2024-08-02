@@ -72,7 +72,7 @@ for stream_name, var_prefix, var_suffix in stream_info_data:
     SubElement(stream_info, "year_last").text = str(year_last)
     SubElement(stream_info, "year_align").text = str(year_align)
     SubElement(stream_info, "vectors").text = "null"
-    SubElement(stream_info, "meshfile").text = "./input/JRA55do-ESMFmesh.nc"
+    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-ESMFmesh.nc"
     SubElement(stream_info, "lev_dimname").text = "null"
 
     datafiles = SubElement(stream_info, "datafiles")
@@ -91,19 +91,19 @@ for stream_name, var_prefix, var_suffix in stream_info_data:
     for year in range(year_first, year_last + 1):
         if year_first == year_last:
             file_element = SubElement(datafiles, "file")
-            file_element.text = f"./input/RYF.{var_prefix}.{year+90}_{year + 90 + 1}.nc"
+            file_element.text = f"./INPUT/RYF.{var_prefix}.{year+90}_{year + 90 + 1}.nc"
         else:
             file_element = SubElement(datafiles, "file")
             if var_prefix == "friver":
                 if year != 2019:
-                    file_element.text = f"./input/land/day/{var_prefix}/gr/v20190429/friver_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}1231.nc"
+                    file_element.text = f"./INPUT/land/day/{var_prefix}/gr/v20190429/friver_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}1231.nc"
                 else:
-                    file_element.text = f"./input/land/day/{var_prefix}/gr/v20190429/friver_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}0105.nc"
+                    file_element.text = f"./INPUT/land/day/{var_prefix}/gr/v20190429/friver_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}0105.nc"
             else:
                 if year != 2019:
-                    file_element.text = f"./input/landIce/day/{var_prefix}/gr/v20190429/licalvf_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}1231.nc"
+                    file_element.text = f"./INPUT/landIce/day/{var_prefix}/gr/v20190429/licalvf_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}1231.nc"
                 else:
-                    file_element.text = f"./input/landIce/day/{var_prefix}/gr/v20190429/licalvf_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}0105.nc"
+                    file_element.text = f"./INPUT/landIce/day/{var_prefix}/gr/v20190429/licalvf_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}0101-{year}0105.nc"
 
 # Convert the XML to a nicely formatted string
 xml_str = minidom.parseString(tostring(root)).toprettyxml(indent="  ")
