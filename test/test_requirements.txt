@@ -1,0 +1,8 @@
+numpy
+pytest
+xarray
+pandas
+netCDF4
+access-nri-intake
+setuptools
+ruamel.yaml
