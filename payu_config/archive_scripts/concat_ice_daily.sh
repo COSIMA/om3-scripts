@@ -51,12 +51,12 @@ if ! command -v -- "ncrcat" > /dev/null 2>&1; then
     module load nco
 fi
 
-for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
-   #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
-   if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ]; then 
+for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
+   output_f=${f/-01.nc/.nc} #remove day in date string
 
-      output_f=${f/-01.nc/.nc} #remove day in date string
-      
+   #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
+   if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ] && [ ! -f output_f ]; then 
+
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
