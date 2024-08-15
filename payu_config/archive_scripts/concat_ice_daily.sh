@@ -54,8 +54,10 @@ fi
 for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
    output_f=${f/-01.nc/.nc} #remove day in date string
 
+   if [ -f $output_f ] ; then
+      echo WARN: $output_f exists, skipping concatenation daily sea ice files
    #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
-   if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ] && [ ! -f output_f ]; then 
+   elif [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ] ; then 
 
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
@@ -65,5 +67,7 @@ for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
       fi
+   else
+      echo "LOG: skipping concatenating daily sea ice files (incomplete month)"
    fi
 done
