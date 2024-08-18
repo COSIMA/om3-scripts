@@ -116,7 +116,7 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
         assert_f_not_exists(p)
 
 
-@pytest.mark.parametrize("hist_dir, ndays", [("Default", 1), ("Default", 27)])
+@pytest.mark.parametrize("hist_dir, ndays", [("Default", 1), ("Default", 30)])
 def test_incomplete_month(hist_dir, ndays, hist_base, tmp_path):
     """
     Run the script to convert the daily data into monthly files, with less than 28 days data, and check no things happen.
