@@ -30,7 +30,7 @@ def daily_files(dir_name, hist_base, ndays, tmp_path):
 
     """
 
-    if dir == "Default":
+    if dir_name == "Default":
         dir_name = "archive/output000"
 
     nx = 30

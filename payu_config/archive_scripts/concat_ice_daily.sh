@@ -53,11 +53,20 @@ fi
 
 for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
    output_f=${f/-01.nc/.nc} #remove day in date string
+   # extract the year and month from existing files
+   year_month=$(echo "$f" | sed -E "s/.*\.([0-9]{4}-[0-9]{2})-[0-9]{2}\.nc/\1/")
+   year=$(echo "$year_month" | cut -d- -f1)
+   month=$(echo "$year_month" | cut -d- -f2)
 
+   # calculate the expected end day for the given year and month
+   end_day=$(cal $month $year | awk "NF {end_day=\$NF}; END {print end_day}")
+
+   # create a "dummy" end day file path for the given year and month
+   end_day_file=${f/-01.nc/-$end_day.nc}
    if [ -f $output_f ]; then
       echo WARN: $output_f exists, skipping concatenation daily sea ice files
-   #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
-   elif [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ] ; then 
+   #if the 1st and the end of that month exists, then assume its a whole month and concatenate
+   elif [ -f $f ] && [ -f $end_day_file ] ; then
 
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
