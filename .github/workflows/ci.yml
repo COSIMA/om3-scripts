@@ -38,8 +38,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install nco
       run: |
-        sudo apt-get update
-        sudo apt-get -y install nco
+        # sudo apt-get update
+        sudo dnf install nco
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
