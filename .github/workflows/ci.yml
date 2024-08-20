@@ -14,8 +14,6 @@ permissions:
 jobs:
   formatting:
     runs-on: ubuntu-latest
-    container:
-      image: rockylinux/rockylinux:8
     steps:
     - uses: actions/checkout@v3
     - name: Code formatting
@@ -26,6 +24,8 @@ jobs:
   test:
     needs: formatting
     runs-on: ubuntu-latest
+    container:
+      image: rockylinux/rockylinux:8
     strategy:
       matrix:
         python-version: ['3.10', '3.11', '3.12']
