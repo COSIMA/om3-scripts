@@ -38,7 +38,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install nco
       run: |
-        dnf install nco
+        dnf install https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/n/nco-4.8.1-1.el8.x86_64.rpm
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
