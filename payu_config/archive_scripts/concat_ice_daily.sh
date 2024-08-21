@@ -51,12 +51,22 @@ if ! command -v -- "ncrcat" > /dev/null 2>&1; then
     module load nco
 fi
 
-for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
-   #if the 1st and the 28th of that month exists, then assume its a whole month and concatenate
-   if [ -f $f ] && [ -f ${f/-01.nc/-28.nc} ]; then 
+for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
+   # extract the year and month from existing files
+   year_month=$(echo "$f" | sed -E "s/.*\.([0-9]{4}-[0-9]{2})-[0-9]{2}\.nc/\1/")
+   year=$(echo "$year_month" | cut -d- -f1)
+   month=$(echo "$year_month" | cut -d- -f2)
 
-      output_f=${f/-01.nc/.nc} #remove day in date string
-      
+   # calculate the expected end day for the given year and month
+   end_day=$(cal $month $year | awk "NF {end_day=\$NF}; END {print end_day}")
+   end_day_file=${f/-01.nc/-$end_day.nc}
+
+   output_f=${f/-01.nc/.nc} #remove day in date string
+
+   if [ -f $output_f ]; then
+      echo WARN: $output_f exists, skipping concatenation daily sea ice files
+   elif [ -f $f ] && [ -f $end_day_file ] ; then
+
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
@@ -65,5 +75,7 @@ for f in $out_dir/access-om3.cice.h.????-??-01.nc ; do
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
       fi
+   else
+      echo "LOG: skipping concatenating daily sea ice files (incomplete month)"
    fi
 done
