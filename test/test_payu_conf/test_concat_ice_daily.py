@@ -30,8 +30,8 @@ def daily_files(dir_name, hist_base, ndays, tmp_path):
 
     """
 
-    # if dir_name == "Default":
-    # dir_name = "archive/output000"
+    if dir_name == "Default":
+        dir_name = "archive/output000"
 
     nx = 30
     ny = 50
@@ -88,21 +88,16 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
     output_dir = Path(daily_paths[0]).parents[0]
 
     if not use_dir:  # default path
-        result = run([run_str], capture_output=True)
-        print(result.stdout)
-        print(result.stderr)
+        run([run_str])
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
     else:  # provide path
-        result = run(
+        run(
             [
                 run_str,
                 "-d",
                 output_dir,
             ],
-            capture_output=True,
         )
-        print(result.stdout)
-        print(result.stderr)
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
 
     # valid output filenames
