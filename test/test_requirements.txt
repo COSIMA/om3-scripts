@@ -3,6 +3,6 @@ pytest
 xarray
 pandas
 netCDF4
-access-nri-intake
+access - nri - intake
 setuptools
 ruamel.yaml

@@ -88,10 +88,12 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
     output_dir = Path(daily_paths[0]).parents[0]
 
     if not use_dir:  # default path
-        run([run_str], capture_output=True)
+        result = run([run_str], capture_output=True)
+        result.stdout
+        result.stderr
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
     else:  # provide path
-        run(
+        result = run(
             [
                 run_str,
                 "-d",
@@ -99,6 +101,8 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
             ],
             capture_output=True,
         )
+        result.stdout
+        result.stderr
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
 
     # valid output filenames
