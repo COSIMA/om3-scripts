@@ -72,7 +72,7 @@ def hist_base(request):
 @pytest.mark.parametrize(
     "hist_dir, ndays, use_dir, nmonths",
     [
-        ("archive/output000", 365, False, 12),
+        ("Default", 365, False, 12),
         ("archive/output999", 31, False, 1),
         ("archive/output9999", 31, False, 1),
         ("archive/output574", 365, True, 12),
