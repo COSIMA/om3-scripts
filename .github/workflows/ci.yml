@@ -38,7 +38,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install nco
       run: |
-        sudo dnf install nco
+        dnf install nco
     - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
