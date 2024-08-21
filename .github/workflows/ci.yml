@@ -44,7 +44,7 @@ jobs:
         pip install -r test/test_requirements.txt
     - name: Test with pytest
       run: |
-        python -m pytest -m "not broken" -vvv
+        python -m pytest -m "not broken" -vvv -s
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3
       env:
