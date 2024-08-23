@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # =========================================================================================
-# Generate constant initial conditions for WOMBATlite using grid from a provided file
+# Generate constant initial conditions for WOMBATlite tracers phy, zoo, det, caco3,
+# det_sediment and caco3_sediment using a provided MOM restart file as a template.
 #
 # To run:
-#   python generate_wombatlite_ic.py --grid-filename=<path-to-grid-file>
-#       --variable-name=<variable-name> --ic-filename=<path-to-output-file>
+#   python generate_wombatlite_ic.py --template-file=<path-to-restart-template-file>
+#       --template-varname=<name-of-variable-in-restart-template-file>
+#       --output-file=<path-to-output-file>
 #
 # For more information, run `python generate_wombatlite_ic.py -h`
 #
@@ -17,7 +19,7 @@
 # configurations, use the latest version checked in to the main branch of the github repository.
 #
 # Contact:
-#   Dougie Squire <dougal.squire@anu.edu.au>
+#   Dougie Squire <dougie.squire@anu.edu.au>
 #
 # Dependencies:
 #   argparse, xarray
@@ -38,43 +40,46 @@ from scripts_common import get_provenance_metadata, md5sum
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate constant initial conditions for WOMBATlite using grid from provided file."
+        description=(
+            "Generate constant initial conditions for WOMBATlite tracers phy, zoo, det, caco3, "
+            "det_sediment and caco3_sediment using a provided MOM restart file as a template."
+        )
     )
 
     parser.add_argument(
-        "--grid-filename",
+        "--template-file",
         required=True,
-        help="The path to a file containing a variable to copy the grid from.",
+        help="The path to an existing MOM restart file to use as a template for the WOMBATlite IC file.",
     )
 
     parser.add_argument(
-        "--variable-name",
+        "--template-varname",
         required=True,
-        help="The name of the variable to copy the grid from.",
+        help="The name of the variable to template from in the template file.",
     )
 
     parser.add_argument(
-        "--ic-filename",
+        "--output-file",
         required=True,
         help="The path to the initial condition file to be outputted.",
     )
 
     args = parser.parse_args()
-    grid_filename = os.path.abspath(args.grid_filename)
-    variable_name = args.variable_name
-    ic_filename = args.ic_filename
+    template_file = os.path.abspath(args.template_file)
+    template_varname = args.template_varname
+    output_file = args.output_file
 
     this_file = os.path.normpath(__file__)
 
     # Add some info about how the file was generated
     runcmd = (
-        f"python3 {this_file} --grid-filename={os.path.abspath(grid_filename)} "
-        f"--variable-name={variable_name} --ic-filename={os.path.abspath(ic_filename)}"
+        f"python3 {this_file} --template-file={os.path.abspath(template_file)} "
+        f"--template-varname={template_varname} --output-file={os.path.abspath(output_file)}"
     )
 
     global_attrs = {
         "history": get_provenance_metadata(this_file, runcmd),
-        "inputFile": f"{grid_filename} (md5 hash: {md5sum(grid_filename)})",
+        "inputFile": f"{template_file} (md5 hash: {md5sum(template_file)})",
     }
 
     # Generate the initial conditions
@@ -89,10 +94,10 @@ def main():
 
     xr.set_options(keep_attrs=True)
     template = xr.open_dataset(
-        grid_filename,
+        template_file,
         decode_cf=False,
         decode_times=False,
-    )[variable_name].compute()
+    )[template_varname].compute()
     ds = {}
     for name, (const, units) in init_vars.items():
         da = 0 * template + const
@@ -102,7 +107,7 @@ def main():
     ds = xr.Dataset(ds)
     ds.attrs = global_attrs
 
-    ds.to_netcdf(ic_filename)
+    ds.to_netcdf(output_file)
 
 
 if __name__ == "__main__":
