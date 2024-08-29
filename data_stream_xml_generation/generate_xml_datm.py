@@ -92,7 +92,7 @@ for stream_name in stream_info_names:
     SubElement(stream_info, "year_last").text = str(year_last)
     SubElement(stream_info, "year_align").text = str(year_align)
     SubElement(stream_info, "vectors").text = "null"
-    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-ESMFmesh.nc"
+    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-datm-ESMFmesh.nc"
     SubElement(stream_info, "lev_dimname").text = "null"
 
     datafiles = SubElement(stream_info, "datafiles")
