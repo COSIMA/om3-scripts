@@ -72,7 +72,7 @@ for stream_name, var_prefix, var_suffix in stream_info_data:
     SubElement(stream_info, "year_last").text = str(year_last)
     SubElement(stream_info, "year_align").text = str(year_align)
     SubElement(stream_info, "vectors").text = "null"
-    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-ESMFmesh.nc"
+    SubElement(stream_info, "meshfile").text = "./INPUT/JRA55do-drof-ESMFmesh.nc"
     SubElement(stream_info, "lev_dimname").text = "null"
 
     datafiles = SubElement(stream_info, "datafiles")
