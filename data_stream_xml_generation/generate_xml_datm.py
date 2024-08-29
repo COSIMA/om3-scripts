@@ -55,27 +55,27 @@ SubElement(metadata, "history").text = metadata_info
 
 # Define the stream info names and corresponding var names
 stream_info_names = [
-    "CORE_IAF_JRA55do.PRSN",
-    "CORE_IAF_JRA55do.PRRN",
-    "CORE_IAF_JRA55do.LWDN",
-    "CORE_IAF_JRA55do.SWDN",
-    "CORE_IAF_JRA55do.Q_10",
-    "CORE_IAF_JRA55do.SLP_10",
-    "CORE_IAF_JRA55do.T_10",
-    "CORE_IAF_JRA55do.U_10",
-    "CORE_IAF_JRA55do.V_10",
+    "JRA55do.PRSN",
+    "JRA55do.PRRN",
+    "JRA55do.LWDN",
+    "JRA55do.SWDN",
+    "JRA55do.Q_10",
+    "JRA55do.SLP_10",
+    "JRA55do.T_10",
+    "JRA55do.U_10",
+    "JRA55do.V_10",
 ]
 
 var_names = {
-    "CORE_IAF_JRA55do.PRSN": ("prsn", "Faxa_prsn"),
-    "CORE_IAF_JRA55do.PRRN": ("prra", "Faxa_prrn"),
-    "CORE_IAF_JRA55do.LWDN": ("rlds", "Faxa_lwdn"),
-    "CORE_IAF_JRA55do.SWDN": ("rsds", "Faxa_swdn"),
-    "CORE_IAF_JRA55do.Q_10": ("huss", "Sa_shum"),
-    "CORE_IAF_JRA55do.SLP_10": ("psl", "Sa_pslv"),
-    "CORE_IAF_JRA55do.T_10": ("tas", "Sa_tbot"),
-    "CORE_IAF_JRA55do.U_10": ("uas", "Sa_u"),
-    "CORE_IAF_JRA55do.V_10": ("vas", "Sa_v"),
+    "JRA55do.PRSN": ("prsn", "Faxa_prsn"),
+    "JRA55do.PRRN": ("prra", "Faxa_prrn"),
+    "JRA55do.LWDN": ("rlds", "Faxa_lwdn"),
+    "JRA55do.SWDN": ("rsds", "Faxa_swdn"),
+    "JRA55do.Q_10": ("huss", "Sa_shum"),
+    "JRA55do.SLP_10": ("psl", "Sa_pslv"),
+    "JRA55do.T_10": ("tas", "Sa_tbot"),
+    "JRA55do.U_10": ("uas", "Sa_u"),
+    "JRA55do.V_10": ("vas", "Sa_v"),
 }
 
 # Generate stream info elements with changing years
@@ -100,10 +100,10 @@ for stream_name in stream_info_names:
 
     if stream_name in (
         [
-            "CORE_IAF_JRA55do.PRSN",
-            "CORE_IAF_JRA55do.PRRN",
-            "CORE_IAF_JRA55do.LWDN",
-            "CORE_IAF_JRA55do.SWDN",
+            "JRA55do.PRSN",
+            "JRA55do.PRRN",
+            "JRA55do.LWDN",
+            "JRA55do.SWDN",
         ]
     ) and (year_first != year_last):
         SubElement(stream_info, "offset").text = (
@@ -122,7 +122,7 @@ for stream_name in stream_info_names:
     var_element = SubElement(datavars, "var")
     var_element.text = f"{var_name_parts[0]}  {var_name_parts[1]}"
 
-    if stream_name == "CORE_IAF_JRA55do.SWDN":
+    if stream_name == "JRA55do.SWDN":
         SubElement(stream_info, "tintalgo").text = "coszen"
     else:
         SubElement(stream_info, "tintalgo").text = "linear"
@@ -136,11 +136,11 @@ for stream_name in stream_info_names:
         else:
             file_element = SubElement(datafiles, "file")
             if stream_name not in [
-                "CORE_IAF_JRA55do.SLP_10",
-                "CORE_IAF_JRA55do.T_10",
-                "CORE_IAF_JRA55do.Q_10",
-                "CORE_IAF_JRA55do.U_10",
-                "CORE_IAF_JRA55do.V_10",
+                "JRA55do.SLP_10",
+                "JRA55do.T_10",
+                "JRA55do.Q_10",
+                "JRA55do.U_10",
+                "JRA55do.V_10",
             ]:
                 if year != 2019:
                     file_element.text = f"./INPUT/atmos/3hr/{var_name_parts[0]}/gr/v20190429/{var_name_parts[0]}_input4MIPs_atmosphericState_OMIP_MRI-JRA55-do-1-4-0_gr_{year}01010130-{year}12312230.nc"
