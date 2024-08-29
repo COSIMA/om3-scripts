@@ -53,8 +53,8 @@ SubElement(metadata, "history").text = metadata_info
 
 # Define the stream info names and corresponding var names
 stream_info_data = [
-    ("rof.iaf_jra", "friver", "Forr_rofl"),
-    ("rof.iaf_jra", "licalvf", "Forr_rofi"),
+    ("JRA55do.FRIVER", "friver", "Forr_rofl"),
+    ("JRA55do.LICALVF", "licalvf", "Forr_rofi"),
 ]
 
 # Generate stream info elements with changing years
