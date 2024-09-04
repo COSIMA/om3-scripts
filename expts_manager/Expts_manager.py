@@ -74,7 +74,7 @@ class Expts_manager(object):
         nml_suffix (str): Suffix for namelist parameters.
         runseq_prefix (str): Prefix for the coupling timestep in `nuopc.runseq`.
         combo_suffix (str): Suffix for combo perturbation experiments, i.e., multiple-parameter tests.
-        branch_perturb (str): user-defined branch name for the perturbation.
+        branch_perturb (str): branch name for the perturbation.
     """
 
     DIR_MANAGER = os.getcwd()
