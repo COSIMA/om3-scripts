@@ -36,7 +36,7 @@ diag_pert: False  # Modify diag_table for perturbation experiments if true
 # 3. nuopc.runconfig
 # 4. all namelists such as ice_in, input.nml etc
 # 5. MOM_input
-# Below are some examples for illustration.
+# Below are some examples for the illustration purpose.
 config.yaml:
     ncpus: 240
     mem: 960GB
@@ -265,6 +265,13 @@ run_namelists: True
 # Determines whether to run using the specified namelists.
 # Default: False.
 # Set to 'True' to apply configurations from the namelist section; otherwise, 'False' to skip this step.
+
+check_duplicate_jobs: True
+# Checks if there are duplicate PBS jobs within the same parent directory (`test_path`) based on their names.
+# This check is useful when you have existing running jobs and want to add additional tests, which helps avoid conflicts by ensuring new jobs dont duplicate exisiting ones in the same `test_path`.
+# The check will not be triggered if the jobs are located in different `test_path`. It only applies to jobs within the same `test_path` directory.
+# Default: True.
+# If duplicates are found, a message will be printed indicating the presence of duplicate runs and those runs will be skipped.
 
 check_skipping: False
 # Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valids to nml type.
