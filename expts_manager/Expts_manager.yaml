@@ -41,10 +41,11 @@ config.yaml:
     ncpus: 240
     mem: 960GB
     walltime: 24:00:00
-    jobname: base-1deg_jra55_ryf_ctrl
+#    jobname: base-1deg_jra55_ryf_ctrl
     metadata:
         enable: true 
     runlog: true
+    restart_freq: 1
 cpl_dt: 1800.0  # Coupling timestep in the `nuopc_runseq` 
 nuopc.runconfig:
     CLOCK_attributes:
