@@ -2,7 +2,7 @@
 # Copyright 2024 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0.
 #
-# Standardise file naming for MOM6 output files from access-om3.
+# Standardise file naming for MOM6 output files in access-om3 by removing the underscore before the four-digit year, i.e., replacing '_YYYY' with 'YYYY'
 # This was written assuming it would be used as a payu "userscript" at the "archive" stage, but alternatively a path to an "archive" directory can be provided.
 # For more details, see https://github.com/COSIMA/om3-scripts/issues/32
 
