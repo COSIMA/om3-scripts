@@ -10,6 +10,8 @@ from pathlib import Path
 scripts_base = Path(__file__).parents[2]
 run_str = f"{scripts_base}/payu_config/archive_scripts/standardise_mom6_filenames.sh"
 
+DIAG_BASE = "access-om3.mom6.h.test"
+
 
 def assert_file_exists(p):
     if not Path(p).resolve().is_file():
@@ -21,7 +23,7 @@ def assert_f_not_exists(p):
         raise AssertionError("File exists and should not: %s" % str(p))
 
 
-def monthly_files(dir_name, hist_base, nmonths, tmp_path):
+def monthly_files(dir_name, nmonths, tmp_path):
     """
     Make 12 months of empty data files data, and then write it into 12 files
 
@@ -30,25 +32,22 @@ def monthly_files(dir_name, hist_base, nmonths, tmp_path):
 
     """
 
-    times = pd.date_range("2010-01-01 12:00", freq="ME", periods=nmonths+1)
+    times = pd.date_range("2010-01-01", freq="ME", periods=nmonths)
 
     out_dir = str(tmp_path) + "/" + dir_name + "/"
-    paths = [f"{out_dir}{hist_base}_{str(t)[0:7]}.nc" for t in times]
-    
+    paths = [f"{out_dir}{DIAG_BASE}_{str(t)[0:4]}_{str(t)[5:7]}.nc" for t in times]
+
     makedirs(out_dir)
 
-    for path in paths:
-        with open(path, "w") as f:
+    for p in paths:
+        with open(p, "w") as f:
+            # f.write("blank")
             f.close()
 
+    for p in paths:
+        assert_file_exists(p)
+
     return paths
-
-
-@pytest.fixture(
-    params=["access-om3.mom.h.test"] #, "access-om3.cice", "access-om3.cice.1day.mean"]
-)
-def hist_base(request):
-    return str(request.param)
 
 
 @pytest.mark.parametrize(
@@ -60,10 +59,9 @@ def hist_base(request):
         ("archive/output574", True, 12),
     ],
 )  # run this test with a several folder names and lengths, provide the directory as an argument sometimes
-def test_true_case(hist_dir, use_dir, nmonths, hist_base, tmp_path):
+def test_true_case(hist_dir, use_dir, nmonths, tmp_path):
 
-
-    monthly_paths = monthly_files(hist_dir, hist_base, nmonths, tmp_path)
+    monthly_paths = monthly_files(hist_dir, nmonths, tmp_path)
     chdir(tmp_path)
     output_dir = Path(monthly_paths[0]).parents[0]
 
@@ -81,17 +79,18 @@ def test_true_case(hist_dir, use_dir, nmonths, hist_base, tmp_path):
         expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
 
     # valid output filenames
-    monthly_paths = [
-        f"{output_dir}/{hist_base}.{str(t)[0:7]}.nc" for t in expected_months
+    expected_paths = [
+        f"{output_dir}/{DIAG_BASE}_{str(t)[0:4]}-{str(t)[5:7]}.nc"
+        for t in expected_months
     ]
 
-    for p in monthly_paths[0:nmonths]:
+    for p in expected_paths[0:nmonths]:
         assert_file_exists(p)
 
-    for p in monthly_paths[nmonths]:
+    for p in expected_paths[nmonths]:
         assert_f_not_exists(p)
 
-    for p in daily_paths:
+    for p in monthly_paths:
         assert_f_not_exists(p)
 
 
