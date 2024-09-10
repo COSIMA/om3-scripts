@@ -828,7 +828,9 @@ class Expts_manager(object):
         keywords = self._extract_metadata_keywords(param_dict)
 
         # extract parameters from the change list, and update `keywords`
-        metadata["keywords"] = (f"{self.base_dir_name}, {self.branch_perturb}, {keywords}")
+        metadata["keywords"] = (
+            f"{self.base_dir_name}, {self.branch_perturb}, {keywords}"
+        )
 
         # remove None comments from `keywords`
         self._remove_metadata_comments("keywords", metadata)
@@ -1012,7 +1014,7 @@ class Expts_manager(object):
                 return
 
         # might need MOM_parameter.all, because many parameters are in-default hence not shown up in `MOM_input`
-        if (self.tag_model == "mom6"):
+        if self.tag_model == "mom6":
             # TODO
             pass
 
