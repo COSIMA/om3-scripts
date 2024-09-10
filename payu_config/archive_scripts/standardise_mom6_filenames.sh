@@ -45,7 +45,7 @@ for dir in ${out_dirs[@]}; do
     # process each mom6 file
     for current_file in $dir/access-om3.mom6.*.nc; do
        if [ -f $current_file ]; then
-            new_filename=$(echo $current_file | sed -E 's/_([0-9]{4})\./\1./')
+            new_filename=$(echo $current_file | sed -E 's/_([0-9]{4})/\1/')
                 # rename the file without overwriting existing files
                 mv -n $current_file $new_filename
         fi
