@@ -770,21 +770,25 @@ class Expts_manager(object):
         Args:
             expt_path (str): The path to the experiment directory.
         """
-        link_restart = os.path.join("archive", "restart" + self.startfrom_str)
-        # restart dir from control experiment
-        restartpath = os.path.realpath(os.path.join(self.base_path, link_restart))
-        # restart dir symlink for each perturbation experiment
-        dest = os.path.join(expt_path, link_restart)
+        if self.startfrom_str != 'rest':
+            link_restart = os.path.join("archive", "restart" + self.startfrom_str)
+            # restart dir from control experiment
+            restartpath = os.path.realpath(os.path.join(self.base_path, link_restart))
+            # restart dir symlink for each perturbation experiment
+            dest = os.path.join(expt_path, link_restart)
 
-        # only generate symlink if it doesnt exist or force_restart is enabled
-        if (
-            not os.path.islink(dest)
-            or self.force_restart
-            or (os.path.islink(dest) and not os.path.exists(os.readlink(dest)))
-        ):
-            if os.path.exists(dest) or os.path.islink(dest):
-                os.remove(dest)  # remove symlink
-            os.symlink(restartpath, dest)  # generate symlink
+            # only generate symlink if it doesnt exist or force_restart is enabled
+            if (
+                not os.path.islink(dest)
+                or self.force_restart
+                or (os.path.islink(dest) and not os.path.exists(os.readlink(dest)))
+            ):
+                if os.path.exists(dest) or os.path.islink(dest):
+                    os.remove(dest)  # remove symlink
+                os.symlink(restartpath, dest)  # generate symlink
+        else:
+            restartpath = 'rest'
+
         return restartpath
 
     def _update_nuopc_config_perturb(self, path):
