@@ -469,6 +469,12 @@ class Expts_manager(object):
         elif k == "nuopc.runseq":
             tag_model = "cpl_dt"
             expt_dir_name = k[-6:]
+        elif k == "config.yaml":
+            tag_model = "config"
+            expt_dir_name = k[:6] + "_input"
+        elif k == "nuopc.runconfig":
+            tag_model = "runconfig"
+            expt_dir_name = k[-9:] + "_input"
         else:
             raise ValueError(f"Unsupported block type: {k}")
         return tag_model, expt_dir_name
@@ -490,7 +496,25 @@ class Expts_manager(object):
             self._handle_mom6_group(k, k_sub, expt_dir_name, nmls)
         elif tag_model == "cpl_dt":
             self._handle_cpl_dt_group(k, k_sub, expt_dir_name, nmls)
+        elif tag_model == "config":
+            self._handle_config_group(k, k_sub, expt_dir_name, nmls)
+        elif tag_model == "runconfig":
+            self._handle_runconfig_group(k, k_sub, expt_dir_name, nmls)
         self.previous_key = k_sub
+
+    def _handle_config_group(self, k, k_sub, expt_dir_name, nmls):
+        """
+        Handles config.yaml and nuopc.runconfig parameter groups specific to `config` tag model.
+        """
+        if k_sub.startswith("config_list"):
+            self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+
+    def _handle_runconfig_group(self, k, k_sub, expt_dir_name, nmls):
+        """
+        Handles config.yaml and nuopc.runconfig parameter groups specific to `config` tag model.
+        """
+        if not k_sub.startswith("runconfig_input"):
+            self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
 
     def _handle_nml_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -509,7 +533,11 @@ class Expts_manager(object):
             )
             commt_dict = MOM_inputParser.commt_dict
             self._process_parameter_group_common(
-                k, k_sub, nmls, expt_dir_name, commt_dict=commt_dict
+                k,
+                k_sub,
+                nmls,
+                expt_dir_name,
+                commt_dict=commt_dict,
             )
 
     def _handle_cpl_dt_group(self, k, k_sub, expt_dir_name, nmls):
@@ -591,7 +619,7 @@ class Expts_manager(object):
         self.param_dict_change_list = param_dict_change_list
         if self.tag_model == "mom6":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif self.tag_model == "nml":
+        elif self.tag_model in (("nml", "config", "runconfig")):
             self.append_group_list = append_group_list
 
     def _generate_combined_dicts(self, name_dict, commt_dict, k_sub):
@@ -608,8 +636,50 @@ class Expts_manager(object):
         self.param_dict_change_list = param_dict_change_list
         if self.tag_model == "mom6":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif self.tag_model == "nml":
+        elif self.tag_model in (("nml", "config", "runconfig")):
             self.append_group_list = append_group_list
+
+    def _generate_combined_dicts2(self, name_dict, commt_dict, k_sub):
+        """
+        Generates a list of dictionaries where each dictionary contains all keys with values from the same index.
+        Handles nested dictionaries with list values to create distinct parameter dictionaries per index.
+        """
+        param_dict_change_list = []
+        append_group_list = []
+
+        # Extract keys from nested dictionaries to determine the number of experiments
+        first_key = next(iter(name_dict))
+        first_subkey = next(iter(name_dict[first_key]))
+
+        # Determine the number of experiments from the length of the first subkey list
+        num_expts = len(name_dict[first_key][first_subkey])
+
+        for i in range(num_expts):
+            # Construct a dictionary for the current experiment
+            param_dict_change = {}
+            for k, v in name_dict.items():
+                # Check if the value is a nested dictionary
+                if isinstance(v, dict):
+                    # Construct a new dictionary for this nested dictionary
+                    nested_dict = {
+                        sub_key: (
+                            sub_value[i]
+                            if isinstance(sub_value, list) and i < len(sub_value)
+                            else sub_value
+                        )
+                        for sub_key, sub_value in v.items()
+                    }
+                    param_dict_change[k] = nested_dict
+                else:
+                    # For non-dictionary values, assign directly
+                    param_dict_change[k] = v
+
+            append_group = k_sub
+            append_group_list.append(append_group)
+            param_dict_change_list.append(param_dict_change)
+
+        self.param_dict_change_list = param_dict_change_list
+        self.append_group_list = append_group_list
 
     def setup_expts(self, parameter_block):
         """
@@ -633,10 +703,14 @@ class Expts_manager(object):
             # update params for each parameter block
             if self.tag_model == "mom6":
                 self._update_mom6_params(expt_path, param_dict)
-            elif self.tag_model == "nml":
+            elif self.tag_model in "nml":
                 self._update_nml_params(expt_path, param_dict, parameter_block, i)
             elif self.tag_model == "cpl_dt":
                 self._update_cpl_dt_params(expt_path, param_dict)
+            elif self.tag_model == "config":
+                self._update_config_params(expt_path, param_dict, parameter_block, i)
+            elif self.tag_model == "runconfig":
+                self._update_runconfig_params(expt_path, param_dict, parameter_block, i)
 
             # optionally update diag_table for perturbation runs
             if self.diag_pert and self.diag_path:
@@ -750,6 +824,50 @@ class Expts_manager(object):
         f90nml.patch(nml_path, patch_dict, nml_path + "_tmp")
         os.rename(nml_path + "_tmp", nml_path)
 
+    def _update_config_params(self, expt_path, param_dict, parameter_block, indx):
+        """
+        Updates namelist parameters and overwrites namelist file.
+
+        Args:
+            expt_path (str): The path to the experiment directory.
+            param_dict (dict): The dictionary of parameters to update.
+            parameter_block (str): The name of the namelist file.
+        """
+
+        nml_path = os.path.join(expt_path, parameter_block)
+        nml_group = self.append_group_list[indx]
+
+        if nml_group.endswith(self.combo_suffix):
+            nml_group = nml_group[
+                : -len(self.combo_suffix)
+            ]  # rename the namlist by removing the suffix if the suffix with `_combo`
+        file_read = self._read_ryaml(nml_path)
+        self._update_config_entries(file_read, param_dict)
+        self._write_ryaml(file_read, nml_path)
+
+    def _update_runconfig_params(self, expt_path, param_dict, parameter_block, indx):
+        """
+        Updates namelist parameters and overwrites namelist file.
+
+        Args:
+            expt_path (str): The path to the experiment directory.
+            param_dict (dict): The dictionary of parameters to update.
+            parameter_block (str): The name of the namelist file.
+        """
+
+        nml_path = os.path.join(expt_path, parameter_block)
+        nml_group = self.append_group_list[indx]
+
+        if nml_group.endswith(self.combo_suffix):
+            nml_group = nml_group[: -len(self.combo_suffix)]
+        param_dict = self.nested_dict(nml_group, param_dict)
+        file_read = self.read_nuopc_config(nml_path)
+        self._update_config_entries(file_read, param_dict)
+        self.write_nuopc_config(file_read, nml_path)
+
+    def nested_dict(self, outer_key, inner_dict):
+        return {outer_key: inner_dict}
+
     def _update_cpl_dt_params(self, expt_path, param_dict):
         """
         Updates coupling timestep parameters.
@@ -770,7 +888,7 @@ class Expts_manager(object):
         Args:
             expt_path (str): The path to the experiment directory.
         """
-        if self.startfrom_str != 'rest':
+        if self.startfrom_str != "rest":
             link_restart = os.path.join("archive", "restart" + self.startfrom_str)
             # restart dir from control experiment
             restartpath = os.path.realpath(os.path.join(self.base_path, link_restart))
@@ -787,7 +905,7 @@ class Expts_manager(object):
                     os.remove(dest)  # remove symlink
                 os.symlink(restartpath, dest)  # generate symlink
         else:
-            restartpath = 'rest'
+            restartpath = "rest"
 
         return restartpath
 

@@ -80,11 +80,11 @@ MOM_input:
 # ============ Perturbation Experiment Setup (Optional) =======================
 # Configure perturbation experiments, currently supports `nuopc.runconfig` only.
 perturb_run_config:
-    CLOCK_attributes:
-        stop_option: nyears
-        stop_n: 1
-        restart_option: nyears
-        restart_n: 1
+   CLOCK_attributes:
+       stop_option: nyears
+       stop_n: 1
+       restart_option: nyears
+       restart_n: 1
 
 # ============ Namelist Tunning ================================
 # Allows fine-tuning of various parameters across different model components 
@@ -198,6 +198,23 @@ perturb_run_config:
 # So, some configurations may not run successfully or produce valid results.
 
 namelists:
+    config.yaml:
+        config_list1:
+            ncpus: [480, 960]
+            mem: [1800GB, 3600GB]
+        config_list2:
+            ncpus: [1080, 2160]
+            mem: [1800GB, 3600GB]
+        config_input_dir3: [config_input1, config_input2]
+        config_list3_combo:
+            ncpus: [1080, 2160]
+            mem: [1800GB, 3600GB]
+    nuopc.runconfig:
+        runconfig_input_dir1: [nuopcrunconfig_input1, nuopcrunconfig_input2]
+        PELAYOUT_attributes_combo:
+                atm_ntasks: [24,48]
+                cpl_ntasks: [24,48]
+                glc_ntasks: [1,1]
     ice_in:
         shortwave_nml_combo:
             albicei: [ 0.36, 0.39, 0.47 ]
@@ -237,10 +254,10 @@ namelists:
         MOM_list3:
             HFREEZE: [12,14]
 
-        MOM_input_dir10: ['min_depth0', 'min_depth0_5', 'max_depth_6000m', 'max_depth_7000m']
+        MOM_input_dir10: ['min_depth0', 'min_depth0_5', 'max_depth_6000m', 'max_depth_7000m', 'max_depth_8000m']
         MOM_list4:
             MINIMUM_DEPTH: [0,0.5]
-            MAXIMUM_DEPTH: [6000.0, 7000.0]
+            MAXIMUM_DEPTH: [6000.0, 7000.0, 8000.0]
 
         MOM_input_dir25: ['timestep_therm_test']
         MOM_list5_combo:
