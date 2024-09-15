@@ -889,6 +889,13 @@ class Expts_manager(object):
             expt_path (str): The path to the experiment directory.
         """
         if self.startfrom_str != "rest":
+            # if exisiting restarts and not force generating restart, then skip.
+            existing_restarts = glob.glob(
+                                os.path.join(self.base_path, "archive", "restart*")
+                                )
+            if existing_restarts and not self.force_restart:
+                return
+
             link_restart = os.path.join("archive", "restart" + self.startfrom_str)
             # restart dir from control experiment
             restartpath = os.path.realpath(os.path.join(self.base_path, link_restart))
