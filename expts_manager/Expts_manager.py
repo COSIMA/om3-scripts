@@ -891,8 +891,8 @@ class Expts_manager(object):
         if self.startfrom_str != "rest":
             # if exisiting restarts and not force generating restart, then skip.
             existing_restarts = glob.glob(
-                                os.path.join(self.base_path, "archive", "restart*")
-                                )
+                os.path.join(self.base_path, "archive", "restart*")
+            )
             if existing_restarts and not self.force_restart:
                 return
 
