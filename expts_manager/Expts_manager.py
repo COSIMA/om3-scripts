@@ -1024,10 +1024,12 @@ class Expts_manager(object):
             folder_path, parent_path = extract_current_and_parent_path(
                 job_info["Error_Path"]
             )
-            if parent_path not in parent_paths:
-                parent_paths[parent_path] = []
-            parent_paths[parent_path].append(folder_path)
 
+            job_state = job_info["job_state"]
+            if job_state not in ("F", "S"):
+                if parent_path not in parent_paths:
+                    parent_paths[parent_path] = []
+                parent_paths[parent_path].append(folder_path)
         duplicated = False
 
         for parent_path, folder_paths in parent_paths.items():
