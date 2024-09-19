@@ -66,7 +66,7 @@ def main(input_path, output_path):
     time_values = []
 
     # Loop over each month and open the corresponding file
-    for month in range(1, 3):
+    for month in range(1, 13):
         # Construct the file name
         file_path = file_template.format(month)
 
