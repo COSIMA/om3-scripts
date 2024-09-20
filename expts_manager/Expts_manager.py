@@ -436,7 +436,7 @@ class Expts_manager(object):
             if not nmls:
                 continue
             # parameter tunning within one file
-            if not k.startswith('cross_block'):
+            if not k.startswith("cross_block"):
                 self._process_params_blocks(k, nmls)
             # parameter tunning across multiple files
             else:
@@ -445,9 +445,9 @@ class Expts_manager(object):
                 self.tmp_count = 0
                 # tmp_k => k (equivalent to `k`, when `cross_block` is disabled)
                 for tmp_k, tmp_nmls in namelists[k].items():
-                    if tmp_k == 'cross_block_input':
+                    if tmp_k == "cross_block_input":
                         self.expt_names = tmp_nmls  # user-defined directories
-                        self.num_expts = len(self.expt_names) # count dirs
+                        self.num_expts = len(self.expt_names)  # count dirs
                     else:
                         for k_sub in tmp_nmls:
                             self.tmp_count += 1
@@ -455,12 +455,16 @@ class Expts_manager(object):
 
                             if k_sub.endswith(self.combo_suffix):
                                 if tmp_k.startswith("MOM_input"):
-                                    MOM_inputParser = self._parser_mom6_input(os.path.join(self.base_path, "MOM_input"))
+                                    MOM_inputParser = self._parser_mom6_input(
+                                        os.path.join(self.base_path, "MOM_input")
+                                    )
                                     commt_dict = MOM_inputParser.commt_dict
                                 else:
                                     commt_dict = None
                                 if name_dict is not None:
-                                    self._generate_combined_dicts(name_dict, commt_dict, k_sub, tmp_k)
+                                    self._generate_combined_dicts(
+                                        name_dict, commt_dict, k_sub, tmp_k
+                                    )
                                     self.setup_expts(tmp_k)
 
                 # reset user-defined dirs
@@ -471,7 +475,7 @@ class Expts_manager(object):
 
         for key, value in tmp_dict.items():
             # Skip 'cross_block_input'
-            if key == 'cross_block_input':
+            if key == "cross_block_input":
                 continue
             if isinstance(value, dict):
                 for inner_key, inner_value in value.items():
@@ -682,7 +686,11 @@ class Expts_manager(object):
         self.param_dict_change_list = param_dict_change_list
         if self.tag_model == "mom6" or parameter_block == "MOM_input":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif self.tag_model in (("nml", "config", "runconfig", "cpl_dt")) or parameter_block.endswith(("_in", ".nml")) or parameter_block in (("config.yaml", "nuopc.runconfig", "nuopc.runseq")):
+        elif (
+            self.tag_model in (("nml", "config", "runconfig", "cpl_dt"))
+            or parameter_block.endswith(("_in", ".nml"))
+            or parameter_block in (("config.yaml", "nuopc.runconfig", "nuopc.runseq"))
+        ):
             self.append_group_list = append_group_list
 
     def setup_expts(self, parameter_block):
@@ -724,7 +732,11 @@ class Expts_manager(object):
             # update params for each parameter block
             if self.tag_model == "mom6" or parameter_block == "MOM_input":
                 self._update_mom6_params(expt_path, param_dict)
-            elif self.tag_model == "nml" or parameter_block.endswith("_in") or parameter_block.endswith(".nml"):
+            elif (
+                self.tag_model == "nml"
+                or parameter_block.endswith("_in")
+                or parameter_block.endswith(".nml")
+            ):
                 self._update_nml_params(expt_path, param_dict, parameter_block, i)
             elif self.tag_model == "cpl_dt" or parameter_block == "nuopc.runseq":
                 self._update_cpl_dt_params(expt_path, param_dict, parameter_block)
@@ -740,7 +752,9 @@ class Expts_manager(object):
                 else:
                     duplicated_bool = False
                 # start runs, count existing runs and do additional runs if needed
-                self._start_experiment_runs(expt_path, expt_name, duplicated_bool, self.nruns)
+                self._start_experiment_runs(
+                    expt_path, expt_name, duplicated_bool, self.nruns
+                )
 
         if self.tag_model != "cb":
             # reset to None after the loop to update user-defined perturbation experiment names!
