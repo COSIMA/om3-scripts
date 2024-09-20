@@ -435,7 +435,50 @@ class Expts_manager(object):
         for k, nmls in namelists.items():
             if not nmls:
                 continue
-            self._process_params_blocks(k, nmls)
+            # parameter tunning within one file
+            if not k.startswith('cross_block'):
+                self._process_params_blocks(k, nmls)
+            # parameter tunning across multiple files
+            else:
+                self.tag_model, _ = self._determine_block_type(k)
+                self.group_count = self._count_second_level_keys(nmls)
+                self.tmp_count = 0
+                # tmp_k => k (equivalent to `k`, when `cross_block` is disabled)
+                for tmp_k, tmp_nmls in namelists[k].items():
+                    if tmp_k == 'cross_block_input':
+                        self.expt_names = tmp_nmls  # user-defined directories
+                        self.num_expts = len(self.expt_names) # count dirs
+                    else:
+                        for k_sub in tmp_nmls:
+                            self.tmp_count += 1
+                            name_dict = tmp_nmls[k_sub]
+
+                            if k_sub.endswith(self.combo_suffix):
+                                if tmp_k.startswith("MOM_input"):
+                                    MOM_inputParser = self._parser_mom6_input(os.path.join(self.base_path, "MOM_input"))
+                                    commt_dict = MOM_inputParser.commt_dict
+                                else:
+                                    commt_dict = None
+                                if name_dict is not None:
+                                    self._generate_combined_dicts(name_dict, commt_dict, k_sub, tmp_k)
+                                    self.setup_expts(tmp_k)
+
+                # reset user-defined dirs
+                self.expt_names = None
+
+    def _count_second_level_keys(self, tmp_dict):
+        group_count = 0
+
+        for key, value in tmp_dict.items():
+            # Skip 'cross_block_input'
+            if key == 'cross_block_input':
+                continue
+            if isinstance(value, dict):
+                for inner_key, inner_value in value.items():
+                    if isinstance(inner_value, dict):
+                        group_count += 1
+
+        return group_count
 
     def _process_params_blocks(self, k, nmls):
         """
@@ -475,6 +518,9 @@ class Expts_manager(object):
         elif k == "nuopc.runconfig":
             tag_model = "runconfig"
             expt_dir_name = k[-9:] + "_input"
+        elif k.startswith("cross_block"):
+            tag_model = "cb"
+            expt_dir_name = "cross_block" + "_input"
         else:
             raise ValueError(f"Unsupported block type: {k}")
         return tag_model, expt_dir_name
@@ -565,7 +611,7 @@ class Expts_manager(object):
         if self.previous_key and self.previous_key.startswith(expt_dir_name):
             self._valid_expt_names(nmls, name_dict)
         if k_sub.endswith(self.combo_suffix):
-            self._generate_combined_dicts(name_dict, commt_dict, k_sub)
+            self._generate_combined_dicts(name_dict, commt_dict, k_sub, k)
         else:
             self._generate_individual_dicts(name_dict, commt_dict, k_sub)
         self.setup_expts(k)
@@ -622,7 +668,7 @@ class Expts_manager(object):
         elif self.tag_model in (("nml", "config", "runconfig")):
             self.append_group_list = append_group_list
 
-    def _generate_combined_dicts(self, name_dict, commt_dict, k_sub):
+    def _generate_combined_dicts(self, name_dict, commt_dict, k_sub, parameter_block):
         """
         Generates a list of dictionaries where each dictionary contains all keys with values from the same index.
         """
@@ -634,52 +680,10 @@ class Expts_manager(object):
             append_group_list.append(append_group)
             param_dict_change_list.append(param_dict_change)
         self.param_dict_change_list = param_dict_change_list
-        if self.tag_model == "mom6":
+        if self.tag_model == "mom6" or parameter_block == "MOM_input":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif self.tag_model in (("nml", "config", "runconfig")):
+        elif self.tag_model in (("nml", "config", "runconfig", "cpl_dt")) or parameter_block.endswith(("_in", ".nml")) or parameter_block in (("config.yaml", "nuopc.runconfig", "nuopc.runseq")):
             self.append_group_list = append_group_list
-
-    def _generate_combined_dicts2(self, name_dict, commt_dict, k_sub):
-        """
-        Generates a list of dictionaries where each dictionary contains all keys with values from the same index.
-        Handles nested dictionaries with list values to create distinct parameter dictionaries per index.
-        """
-        param_dict_change_list = []
-        append_group_list = []
-
-        # Extract keys from nested dictionaries to determine the number of experiments
-        first_key = next(iter(name_dict))
-        first_subkey = next(iter(name_dict[first_key]))
-
-        # Determine the number of experiments from the length of the first subkey list
-        num_expts = len(name_dict[first_key][first_subkey])
-
-        for i in range(num_expts):
-            # Construct a dictionary for the current experiment
-            param_dict_change = {}
-            for k, v in name_dict.items():
-                # Check if the value is a nested dictionary
-                if isinstance(v, dict):
-                    # Construct a new dictionary for this nested dictionary
-                    nested_dict = {
-                        sub_key: (
-                            sub_value[i]
-                            if isinstance(sub_value, list) and i < len(sub_value)
-                            else sub_value
-                        )
-                        for sub_key, sub_value in v.items()
-                    }
-                    param_dict_change[k] = nested_dict
-                else:
-                    # For non-dictionary values, assign directly
-                    param_dict_change[k] = v
-
-            append_group = k_sub
-            append_group_list.append(append_group)
-            param_dict_change_list.append(param_dict_change)
-
-        self.param_dict_change_list = param_dict_change_list
-        self.append_group_list = append_group_list
 
     def setup_expts(self, parameter_block):
         """
@@ -687,7 +691,6 @@ class Expts_manager(object):
         """
         for i, param_dict in enumerate(self.param_dict_change_list):
             print(param_dict)
-
             # generate perturbation experiment directory names
             expt_name = self._generate_expt_names(i)
 
@@ -696,50 +699,52 @@ class Expts_manager(object):
 
             # generate perturbation experiment directory
             if os.path.exists(expt_path):
-                print(f"-- not creating {expt_path} - already exists!")
+                if self.tmp_count == self.group_count or self.tag_model != "cb":
+                    print(f"-- not creating {expt_path} - already exists!")
             else:
-                self._generate_expt_directory(expt_path, parameter_block, i)
+                if self.tmp_count == 1 or self.tag_model != "cb":
+                    self._generate_expt_directory(expt_path, parameter_block, i)
+
+            if self.tmp_count == self.group_count or self.tag_model != "cb":
+                # optionally update diag_table for perturbation runs
+                if self.diag_pert and self.diag_path:
+                    self._copy_diag_table(expt_path)
+
+                # symlink restart directories
+                restartpath = self._generate_restart_symlink(expt_path)
+                self._update_metadata_yaml_perturb(expt_path, param_dict, restartpath)
+
+                # only update perturbation jobname [TODO: put somewhere else]
+                self._update_config_yaml_perturb(expt_path, expt_name)
+
+                # optionally update nuopc.runconfig for perturbation runs
+                if self.tag_model not in (("cb", "runconfig")):
+                    self._update_nuopc_config_perturb(expt_path)
 
             # update params for each parameter block
-            if self.tag_model == "mom6":
+            if self.tag_model == "mom6" or parameter_block == "MOM_input":
                 self._update_mom6_params(expt_path, param_dict)
-            elif self.tag_model in "nml":
+            elif self.tag_model == "nml" or parameter_block.endswith("_in") or parameter_block.endswith(".nml"):
                 self._update_nml_params(expt_path, param_dict, parameter_block, i)
-            elif self.tag_model == "cpl_dt":
-                self._update_cpl_dt_params(expt_path, param_dict)
-            elif self.tag_model == "config":
+            elif self.tag_model == "cpl_dt" or parameter_block == "nuopc.runseq":
+                self._update_cpl_dt_params(expt_path, param_dict, parameter_block)
+            elif self.tag_model == "config" or parameter_block == "config.yaml":
                 self._update_config_params(expt_path, param_dict, parameter_block, i)
-            elif self.tag_model == "runconfig":
+            elif self.tag_model == "runconfig" or parameter_block == "nuopc.runconfig":
                 self._update_runconfig_params(expt_path, param_dict, parameter_block, i)
 
-            # optionally update diag_table for perturbation runs
-            if self.diag_pert and self.diag_path:
-                self._copy_diag_table(expt_path)
+            if self.tmp_count == self.group_count or self.tag_model != "cb":
+                pbs_jobs = self._output_existing_pbs_jobs()
+                if self.check_duplicate_jobs:
+                    duplicated_bool = self._check_duplicated_jobs(pbs_jobs, expt_path)
+                else:
+                    duplicated_bool = False
+                # start runs, count existing runs and do additional runs if needed
+                self._start_experiment_runs(expt_path, expt_name, duplicated_bool, self.nruns)
 
-            # symlink restart directories
-            restartpath = self._generate_restart_symlink(expt_path)
-
-            # optionally update nuopc.runconfig for perturbation runs
-            self._update_nuopc_config_perturb(expt_path)
-
-            self._update_config_yaml_perturb(expt_path, expt_name)
-            self._update_metadata_yaml_perturb(expt_path, param_dict, restartpath)
-
-            # check exisiting pbs jobs
-            pbs_jobs = self._output_existing_pbs_jobs()
-
-            # check duplicated running jobs
-            if self.check_duplicate_jobs:
-                duplicated_bool = self._check_duplicated_jobs(pbs_jobs, expt_path)
-            else:
-                duplicated_bool = False
-
-            # start runs, count existing runs and do additional runs if needed
-            self._start_experiment_runs(
-                expt_path, expt_name, duplicated_bool, self.nruns
-            )
-
-        self.expt_names = None  # reset to None after the loop to update user-defined perturbation experiment names!
+        if self.tag_model != "cb":
+            # reset to None after the loop to update user-defined perturbation experiment names!
+            self.expt_names = None
 
     def _generate_expt_names(self, indx):
         if self.expt_names is None:
@@ -806,10 +811,9 @@ class Expts_manager(object):
         nml_path = os.path.join(expt_path, parameter_block)
         nml_group = self.append_group_list[indx]
 
+        # rename the namlist by removing the suffix if the suffix with `_combo`
         if nml_group.endswith(self.combo_suffix):
-            nml_group = nml_group[
-                : -len(self.combo_suffix)
-            ]  # rename the namlist by removing the suffix if the suffix with `_combo`
+            nml_group = nml_group[: -len(self.combo_suffix)]
 
         patch_dict = {nml_group: {}}
         for nml_name, nml_value in param_dict.items():
@@ -837,10 +841,9 @@ class Expts_manager(object):
         nml_path = os.path.join(expt_path, parameter_block)
         nml_group = self.append_group_list[indx]
 
+        # rename the namlist by removing the suffix if the suffix with `_combo`
         if nml_group.endswith(self.combo_suffix):
-            nml_group = nml_group[
-                : -len(self.combo_suffix)
-            ]  # rename the namlist by removing the suffix if the suffix with `_combo`
+            nml_group = nml_group[: -len(self.combo_suffix)]
         file_read = self._read_ryaml(nml_path)
         self._update_config_entries(file_read, param_dict)
         self._write_ryaml(file_read, nml_path)
@@ -858,6 +861,7 @@ class Expts_manager(object):
         nml_path = os.path.join(expt_path, parameter_block)
         nml_group = self.append_group_list[indx]
 
+        # rename the namlist by removing the suffix if the suffix with `_combo`
         if nml_group.endswith(self.combo_suffix):
             nml_group = nml_group[: -len(self.combo_suffix)]
         param_dict = self.nested_dict(nml_group, param_dict)
@@ -868,7 +872,7 @@ class Expts_manager(object):
     def nested_dict(self, outer_key, inner_dict):
         return {outer_key: inner_dict}
 
-    def _update_cpl_dt_params(self, expt_path, param_dict):
+    def _update_cpl_dt_params(self, expt_path, param_dict, parameter_block):
         """
         Updates coupling timestep parameters.
 
@@ -876,7 +880,7 @@ class Expts_manager(object):
             expt_path (str): The path to the experiment directory.
             param_dict (dict): The dictionary of parameters to update.
         """
-        nuopc_runseq_file = os.path.join(expt_path, "nuopc.runseq")
+        nuopc_runseq_file = os.path.join(expt_path, parameter_block)
         self._update_cpl_dt_nuopc_seq(
             nuopc_runseq_file, param_dict[next(iter(param_dict.keys()))]
         )
