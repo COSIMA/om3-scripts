@@ -166,6 +166,9 @@ class Expts_manager(object):
         self.expt_names = None
         self.diag_path = None
 
+        self.tmp_count = 0
+        self.group_count = 0
+
     def load_tools(self):
         """
         Loads external tools required for the experiments.
