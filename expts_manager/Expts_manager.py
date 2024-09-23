@@ -238,7 +238,7 @@ class Expts_manager(object):
 
         if os.path.exists(base_path):
             print(f"Base path is already created and located at {base_path}")
-            if not os.path.isfile(os.path.join(base_path,"config.yaml")):
+            if not os.path.isfile(os.path.join(base_path, "config.yaml")):
                 print(
                     "previous commit fails, please try with an updated commit hash for the control experiment!"
                 )
@@ -326,33 +326,35 @@ class Expts_manager(object):
             if yaml_data:
                 # Update parameters from namelists
                 if file_name.endswith("_in") or file_name.endswith(".nml"):
-                        self._update_nml_params(self.base_path, yaml_data, file_name)
+                    self._update_nml_params(self.base_path, yaml_data, file_name)
 
                 # Update config entries from `nuopc.runconfig` and `config_yaml`
                 if file_name in (("nuopc.runconfig", "config.yaml")):
-                        if file_name == "nuopc.runconfig":
-                            self._update_runconfig_params(self.base_path, yaml_data, file_name)
-                        elif file_name == "config.yaml":
-                            self._update_config_params(self.base_path, yaml_data, file_name)
+                    if file_name == "nuopc.runconfig":
+                        self._update_runconfig_params(
+                            self.base_path, yaml_data, file_name
+                        )
+                    elif file_name == "config.yaml":
+                        self._update_config_params(self.base_path, yaml_data, file_name)
 
                 # Update parameters from `MOM_input`
                 if file_name == "MOM_input":
-                        # parse existing MOM_input
-                        MOM_inputParser = self._parser_mom6_input(
-                            os.path.join(self.base_path, file_name)
-                        )
-                        param_dict = MOM_inputParser.param_dict  # read parameter dictionary
-                        commt_dict = MOM_inputParser.commt_dict  # read comment dictionary
-                        param_dict.update(yaml_data)
-                        # overwrite to the same `MOM_input`
-                        MOM_inputParser.writefile_MOM_input(
-                            os.path.join(self.base_path, file_name)
-                        )
+                    # parse existing MOM_input
+                    MOM_inputParser = self._parser_mom6_input(
+                        os.path.join(self.base_path, file_name)
+                    )
+                    param_dict = MOM_inputParser.param_dict  # read parameter dictionary
+                    commt_dict = MOM_inputParser.commt_dict  # read comment dictionary
+                    param_dict.update(yaml_data)
+                    # overwrite to the same `MOM_input`
+                    MOM_inputParser.writefile_MOM_input(
+                        os.path.join(self.base_path, file_name)
+                    )
 
                 # Update only coupling timestep from `nuopc.runseq`
                 if file_name == "nuopc.runseq":
-                        nuopc_runseq_file = os.path.join(self.base_path, file_name)
-                        self._update_cpl_dt_nuopc_seq(nuopc_runseq_file, yaml_data)
+                    nuopc_runseq_file = os.path.join(self.base_path, file_name)
+                    self._update_cpl_dt_nuopc_seq(nuopc_runseq_file, yaml_data)
 
     def _check_and_commit_changes(self):
         """
@@ -864,13 +866,15 @@ class Expts_manager(object):
                     f"\n"
                     f"-- jobname must be the same as {expt_name}, "
                     f"hence jobname is forced to be {expt_name}!",
-                UserWarning
+                    UserWarning,
                 )
         param_dict["jobname"] = expt_name
         self._update_config_entries(file_read, param_dict)
         self._write_ryaml(file_read, nml_path)
 
-    def _update_runconfig_params(self, expt_path, param_dict, parameter_block, indx=None):
+    def _update_runconfig_params(
+        self, expt_path, param_dict, parameter_block, indx=None
+    ):
         """
         Updates namelist parameters and overwrites namelist file.
 
