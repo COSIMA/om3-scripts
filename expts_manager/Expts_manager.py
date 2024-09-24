@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-ACCESS-OM3 Experiment Management Tool
-This python script manages experiment runs for ACCESS-OM3, providing functionalities
-to set up control and perturbation experiments, modify configuration files,
-and manage related utilities.
+ACCESS-OM Experiment Management Tool
+This python script manages experiment runs for both ACCESS-OM2 and ACCESS-OM3,
+providing functionalities to set up control and perturbation experiments,
+modify configuration files, and manage related utilities.
 
 Latest version: https://github.com/COSIMA/om3-scripts/pull/34
 Author: Minghang Li
@@ -1396,7 +1396,7 @@ class Expts_manager(object):
         Main function for the program.
         """
         parser = argparse.ArgumentParser(
-            description="Manage ACCESS-OM2 or ACCESS-OM3 experiments.\
+            description="Manage either ACCESS-OM2 or ACCESS-OM3 experiments.\
                  Latest version and help: https://github.com/COSIMA/om3-scripts/pull/34"
         )
         parser.add_argument(
