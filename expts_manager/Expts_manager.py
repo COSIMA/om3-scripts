@@ -121,9 +121,9 @@ class Expts_manager(object):
         self.indata = self._read_ryaml(yamlfile)
 
         self.model = self.indata["model"]
-        self.utils_url = self.indata["utils_url"]
-        self.utils_dir_name = self.indata["utils_dir_name"]
-        self.utils_branch_name = self.indata["utils_branch_name"]
+        self.utils_url = self.indata.get("utils_url", None)
+        self.utils_dir_name = self.indata.get("utils_dir_name", None)
+        self.utils_branch_name = self.indata.get("utils_branch_name", None)
 
         self.base_url = self.indata["base_url"]
         self.base_commit = self.indata["base_commit"]
@@ -190,11 +190,26 @@ class Expts_manager(object):
             else:
                 print(f"{path} already exists!")
 
-        # om3-utils is a must
-        utils_path = os.path.join(self.dir_manager, self.utils_dir_name)
-        _clone_repo(
-            self.utils_branch_name, self.utils_url, utils_path, self.utils_dir_name
+        # om3-utils is a must for om3 but not required for access-om2.
+        utils_path = (
+            os.path.join(self.dir_manager, self.utils_dir_name)
+            if self.utils_dir_name
+            else None
         )
+
+        if self.model == "access-om3" and utils_path is None:
+            raise ValueError(f"om3-utils tool must be loaded for {self.model}!")
+        elif self.model == "access-om2" and utils_path:
+            warnings.warn(
+                f"om3-utils tool is not used for {self.model}, "
+                f"hence, is not cloned!",
+                UserWarning,
+            )
+
+        if self.model == "access-om3":
+            _clone_repo(
+                self.utils_branch_name, self.utils_url, utils_path, self.utils_dir_name
+            )
 
         # make_diag_table is [optional]
         self.diag_path = (
@@ -211,13 +226,14 @@ class Expts_manager(object):
         else:
             sys.path.extend([utils_path])
 
-        # load modules from om3-utils
-        from om3utils import MOM6InputParser
-        from om3utils.nuopc_config import read_nuopc_config, write_nuopc_config
+        if utils_path is not None:
+            # load modules from om3-utils
+            from om3utils import MOM6InputParser
+            from om3utils.nuopc_config import read_nuopc_config, write_nuopc_config
 
-        self.MOM6InputParser = MOM6InputParser
-        self.read_nuopc_config = read_nuopc_config
-        self.write_nuopc_config = write_nuopc_config
+            self.MOM6InputParser = MOM6InputParser
+            self.read_nuopc_config = read_nuopc_config
+            self.write_nuopc_config = write_nuopc_config
 
     def create_test_path(self):
         """
@@ -1392,6 +1408,8 @@ class Expts_manager(object):
         if self.run_namelists:
             print("==== Start perturbation experiments ====")
             self.manage_perturb_expt()
+        else:
+            print("==== No perturbation experiments are prescribed ====")
 
 
 if __name__ == "__main__":
