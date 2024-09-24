@@ -245,6 +245,15 @@ class Expts_manager(object):
             os.makedirs(self.test_path)
             print(f"test directory {self.test_path} is created!")
 
+    def model_selection(self):
+        """
+        Ensures the model to be either "access-om2" or "access-om3"
+        """
+        if self.model not in (("access-om2", "access-om3")):
+            raise ValueError(
+                f"{self.model} requires to be either " f"access-om2 or access-om3!"
+            )
+
     def manage_ctrl_expt(self):
         """
         Setup and run the control experiment
@@ -791,13 +800,13 @@ class Expts_manager(object):
                 restartpath = self._generate_restart_symlink(expt_path)
                 self._update_metadata_yaml_perturb(expt_path, param_dict, restartpath)
 
+                # update jobname same as perturbation experiment name
+                self._update_perturb_jobname(expt_path, expt_name)
+
                 # optionally update nuopc.runconfig for perturbation runs
                 # if there is no parameter tunning under cb or runconfig flags!
                 if self.tag_model not in (("cb", "runconfig")):
                     self._update_nuopc_config_perturb(expt_path)
-
-                # update jobname same as perturbation experiment name
-                self._update_perturb_jobname(expt_path, expt_name)
 
             # update params for each parameter block
             if self.tag_model == "mom6" or parameter_block == "MOM_input":
@@ -1018,8 +1027,8 @@ class Expts_manager(object):
             existing_restarts = glob.glob(
                 os.path.join(self.base_path, "archive", "restart*")
             )
-            # if existing_restarts and not self.force_restart:
-            #     return
+            if existing_restarts and not self.force_restart:
+                return
 
             link_restart = os.path.join("archive", "restart" + self.startfrom_str)
             # restart dir from control experiment
@@ -1403,6 +1412,7 @@ class Expts_manager(object):
         yamlfile = os.path.join(self.dir_manager, INPUT_YAML)
         self.load_variables(yamlfile)
         self.create_test_path()
+        self.model_selection()
         self.load_tools()
         self.manage_ctrl_expt()
         if self.run_namelists:
