@@ -4,13 +4,13 @@ try:
 
     ryaml = YAML()
     ryaml.preserve_quotes = True
+    ryaml.indent(mapping=4, sequence=4, offset=2)
 except ImportError:
     print("\nFatal error: modules not available.")
     print("On NCI, do the following and try again:")
     print("   module use /g/data/vk83/modules && module load payu/1.1.5\n")
     raise
 
-ryaml.indent(mapping=4, sequence=4, offset=2)
 import os
 from io import StringIO
 
@@ -24,13 +24,13 @@ def write_config_yaml_file(file_path, description_sections):
     - description_sections (list of tuples): Each tuple contains a section description (str) and its configs (list of dicts).
     """
     intro_comment = """
-# ===========================================================
-# YAML config for Expts_manager.py
-# ===========================================================
-# This config file contains the necessary parameters and configs
-# to clone, setup, and run control experiments and perturbation tests using `Expts_manager.py`. 
-# Detailed explanations are provided to ensure clarity and ease of use for prospective users.
-# ===========================================================
+# =====================================================================================
+# YAML Configuration for Expts_manager.py
+# =====================================================================================
+# This configuration file defining the parameters and settings required for cloning,
+# setting up, and running control and perturbation experiments using `Expts_manager.py`.
+# Detailed explanations are provided to ensure the configuration is straightforward.
+# =====================================================================================
 """
 
     def dump_block_style(value):
@@ -39,37 +39,52 @@ def write_config_yaml_file(file_path, description_sections):
         buffer.seek(0)
         return buffer.read()
 
+    def write_value(key, value, file, comment=None, indent=0):
+        indent_space = " " * (indent * 4)
+        if isinstance(value, dict):
+            file.write(f"{indent_space}{key}:\n")
+            for sub_key, sub_value in value.items():
+                write_value(sub_key, sub_value, file, indent=indent + 1)
+        elif isinstance(value, list):
+            list_content = ", ".join(map(str, value))
+            file.write(f"{indent_space}{key}: [{list_content}]")
+        else:
+            file.write(f"{indent_space}{key}: {value}")
+        if comment:
+            file.write(f"  {comment}")
+        file.write("\n")
+
     with open(file_path, "w") as file:
         file.write(intro_comment + "\n")
         for description, config_list in description_sections:
-            file.write(description + "\n")
+            file.write(f"{description}\n")
             for item in config_list:
                 if isinstance(item, dict):
                     key = item.get("key", "")
                     value = item.get("value", "")
                     comment = item.get("comment", "")
-                    if isinstance(value, dict):
-                        content = dump_block_style(value)
-                        content = "\n".join(
-                            " " * 4 + line for line in content.splitlines()
-                        )
-                        file.write(f"{key}:\n{content}\n")
-                    else:
-                        if comment:
-                            file.write(f"{key}: {value}   {comment}\n")
-                        else:
-                            file.write(f"{key}: {value}\n")
-                else:
-                    file.write(f"{item}\n")
+                    write_value(key, value, file, comment=comment)
 
 
 if __name__ == "__main__":
+    # Descriptions and configs for Model Selection
+    descrpt_model_sel = """
+# ============ Model Selection ========================================================
+"""
+    model_sel = [
+        {
+            "key": "model",
+            "value": "access-om3",
+            "comment": "# Specify the model to be used. Options: 'access-om2', 'access-om3'",
+        },
+    ]
+
     # Descriptions and configs for Utility tool
     descrpt_util = """
-# ============ Utility Tool config =======================
-# Provides tools for:
-# 1. Parsing parameters and comments from `MOM_input` in MOM6.
-# 2. Reading and writing the `nuopc.runconfig` file.
+# ============ Utility Tool Configuration (only for access-om3) =======================
+# The following configuration provides the necessary tools to:
+# 1. Parse parameters and comments from `MOM_input` in MOM6.
+# 2. Read and write the `nuopc.runconfig` file.
 """
     config_util = [
         {
@@ -91,8 +106,8 @@ if __name__ == "__main__":
 
     # Descriptions and configs for Control Experiment Setup
     descrpt_diag = """
-# ============ diagnostic table (optional) =======================
-# Configuration for modifying the diagnostic table.
+# ============ Diagnostic Table (optional) ============================================
+# Configuration for customising the diagnostic table.
 """
     config_diag = [
         {
@@ -113,19 +128,18 @@ if __name__ == "__main__":
         {
             "key": "diag_ctrl",
             "value": "False",
-            "comment": "# Modify diag_table for control experiment if true",
+            "comment": "# Set to 'True' to modify the diagnostic table for the control experiment",
         },
         {
             "key": "diag_pert",
             "value": "False",
-            "comment": "# Modify diag_table for perturbation experiments if true",
+            "comment": "# Set to 'True' to modify the diagnostic table for perturbation experiments",
         },
     ]
 
     # Descriptions and configs for Control Experiment Setup
     descrpt_control = """
-# ============ Control Experiment Setup =======================
-# config for setting up control experiments.
+# ============ Control Experiment Setup ===============================================
 """
     config_control = [
         {
@@ -151,20 +165,20 @@ if __name__ == "__main__":
         {
             "key": "test_path",
             "value": "test",
-            "comment": "# Path for all test runs",
+            "comment": "# Relative path for all test (control and perturbation) runs (user-defined)",
         },
     ]
 
     # Descriptions and configs for Control Experiment Variables
     descrpt_control_expt = """
-# ============ Control Experiment Variables =======================
+# ============ Control Experiment Variables ===========================================
 # Allows modification of various control experiment settings.
-# 1. config.yaml
-# 2. cpl_dt (coupling timestep)
-# 3. nuopc.runconfig
-# 4. all namelists such as ice_in, input.nml etc
-# 5. MOM_input
-# Below are some examples for the illustration purpose.
+# 1. config.yaml  (access-om2 or access-om3)
+# 2. all namelists such as with endswith "_in" or ".nml" etc.  (access-om2 or access-om3)
+# 3. cpl_dt (coupling timestep)  (access-om3)
+# 4. nuopc.runconfig  (access-om3)
+# 5. MOM_input  (access-om3)
+# Below are some examples for the illustration purpose, please modify for your own settings.
 """
     config_control_expt = [
         {
@@ -173,6 +187,7 @@ if __name__ == "__main__":
                 "ncpus": 240,
                 "mem": "960GB",
                 "walltime": "24:00:00",
+                "#jobname": "# `jobname` will be forced to be the name of the directory, which is `Ctrl-1deg_jra55do_ryf` in this example.",
                 "metadata": {"enable": True},
                 "runlog": True,
                 "restart_freq": 1,
@@ -211,7 +226,7 @@ if __name__ == "__main__":
                 "domain_nml": {
                     "max_blocks": -1,
                     "block_size_x": 15,
-                    "block_size_y": 20,
+                    "block_size_y": 300,
                 },
             },
         },
@@ -233,211 +248,171 @@ if __name__ == "__main__":
             },
         },
     ]
-    # Descriptions and configs for Perturbation Experiment Setup (Optional)
-    descrpt_perturb_setup = """
-# ============ Perturbation Experiment Setup (Optional) =======================
-# Configure perturbation experiments, currently supports `nuopc.runconfig` only.
-"""
-    config_perturb_setup = [
-        {
-            "key": "perturb_run_config",
-            "value": {
-                "CLOCK_attributes": {
-                    "stop_option": "ndays",
-                    "stop_n": 1,
-                    "restart_option": "ndays",
-                    "restart_n": 1,
-                },
-            },
-        },
-    ]
 
     # Descriptions and configs for Namelist Tunning
     descrpt_namelists = """
 # ============ Namelist Tunning ================================
-# Allows fine-tuning of various parameters across different model components 
-# such as ice_in, input.nml, drv_in, and MOM_input.
+# Tune parameters across different model components.
 
 # Generlised structure
-# namelists
-#     parameter_block1:
-#         parameter_group1:
-#             parameter1: list of string(s) or value(s)
-#             parameter2: list of string(s) or value(s)
+# 1. Single-parameter tunning within single file
+# namelists:
+#     filename: (Required).
+#         filename_dirs: List of directory names (Optional - user-defined: filename must be appended with "_dirs"; additional strings may follow).
+#         groupname: (Required: for f90 namelists or nuopc.runconfig, this is simply the group name; for MOM input, use "MOM_list"; for nuopc.runseq, use "runseq_list").
+#             parameter1: list of values
+#             parameter2: list of values
 #             ...
-#         parameter_group2_combo:
-#             parameter1: list of string(s) or value(s)
-#             parameter2: list of string(s) or value(s)
-#             ...
-#         parameter_group3_xxx: list of user-defined perturbation experiment directory names
-#         parameter_group3:
-#             parameter1: list of string(s) or value(s)
-#             parameter2: list of string(s) or value(s)
-#             ...
-#         parameter_group4_xxx: list of user-defined perturbation experiment directory names
-#         parameter_group4_combo:
-#             parameter1: list of string(s) or value(s)
-#             parameter2: list of string(s) or value(s)
-#             ...
+#     ...
 
-# There are three types of parameters available for tunning, 
-# 1. namelists (nml), 
-# 2. parameters in MOM_input (mom6), and 
-# 3. coupling timestep in nuopc.runseq (cpl_dt).
+# 2. Multiple-parameter tuning within a single group in a single file
+# namelists:
+#     filename: (Required).
+#         filename_dirs: List of directory names (Optional - user-defined: filename must be appended with "_dirs"; additional strings may follow).
+#         groupname_combo: (Required: for f90 namelists or nuopc.runconfig, use the group name; for MOM input, use "MOM_list"; for nuopc.runseq, use "runseq_list", then append "_combo").
+#             parameter1: list of values
+#             parameter2: list of values
+#             ...
+#     ...
 
-# 1. nml type:
-# (1) Individual parameter tunning:
-#    parameter_block (filename, e.g., ice_in)
-#        parameter_group (namelist, e.g., shortwave_nml)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., ahmax: [0.2, 0.3])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., r_snw: [0.1, 0.2])
-# In the above example, there will be 4 individual perturbation experiments generated.
+# 3. Multiple-parameter tuning across different files using user-defined directories
+# namelists:
+#     cross_block: (Required: additional strings may follow "cross_block").
+#         cross_block_dirs: List of directory names (Required - user-defined: filename must be appended with "_dirs"; additional strings may follow).
+#         filename:
+#             groupname_combo: (Required: for f90 namelists or nuopc.runconfig, use the group name; for MOM input, use "MOM_list"; for nuopc.runseq, use "runseq_list", then append "_combo").
+#                 parameter1: list of values
+#                 parameter2: list of values
+#                 ...
+#         filename:
+#             groupname_combo: (Required: for f90 namelists or nuopc.runconfig, use the group name; for MOM input, use "MOM_list"; for nuopc.runseq, use "runseq_list", then append "_combo").
+#                 parameter1: list of values
+#                 parameter2: list of values
+#                 ...
+#         ...
 #
-# (2) Combined parameters tunning:
-# For combined parameters tunning, `parameter_group` requires to suffix with `_combo`, e.g., `shortwave_nml_combo`
-#    parameter_block (filename, e.g., ice_in)
-#        parameter_group (namelist, e.g., shortwave_nml_combo)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., albicei: [ 0.36, 0.39 ])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., albicev: [ 0.78, 0.81 ])
-# In the above example, there will be 2 perturbation experiments generated, where each column will form an experiment.
-# 
-# Perturbation experiment directory names:
-# The perturbation experiment directory names of the above (1) and (2) will be named as `parameter1_value1_parameter2_value2...`.
-# For example, for (1), the created experiment directory names will be, ahmax_0.2, ahmax_0.3, r_snw_0.1, r_snw_0.2
-#              for (2), the created experiment directory names will be, albicei_0.36_albicev_0.78, albicei_0.39_albicev_0.81
-#
-# (3) User-defined perturbation experiment directory names [optional] with (1) or (2):
-# Current tool also provides an [optional] user-defined experiment directory names, which must be positioned on top of the `parameter_group` and start with the string of the filename.
-# The number of user-defined directory names must have the same length of the parameters. 
-# Below is an example with (1),
-#    filename+xxx: list of strings (e.g., ice_in_dir_test: ['test_a', 'test_10', 'test_ds', 'test_fdis'])
-#    parameter_block (filename, e.g., ice_in)
-#        parameter_group (namelist, e.g., shortwave_nml)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., ahmax: [0.2, 0.3])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., r_snw: [0.1, 0.2])
-# In the above example, there will be 4 individual perturbation experiments generated and are named as, test_a, test_10, test_ds, test_fdis.
-#
-# Similarly for (2),
-#    filename+xxx: list of strings (e.g., ice_in_0: ['abc_1', 'mk_100'])
-#    parameter_block (filename, e.g., ice_in)
-#        parameter_group (namelist, e.g., shortwave_nml_combo)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., albicei: [ 0.36, 0.39 ])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., albicev: [ 0.78, 0.81 ])
-# In the above example, there will be 2 perturbation experiments generated and are named as, abc_1, mk_100.
-# 
-# 2. mom6 type:
-# Similar to the `nml` type, parameter block is the filename, hence is `MOM_input`.
-# The string of `parameter_group` of mom6 type is fixed and always start with `MOM_list`.
-#
-# (4) Individual parameter tunning:
-#    parameter_block (filename, e.g., MOM_input)
-#        parameter_group (namelist, e.g., MOM_list_test)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., HFREEZE: [14, 16])
-# In the above example, there will be 2 individual perturbation experiments generated are name as HFREEZE_14, HFREEZE_16.
-#
-# (5) Combined parameters tunning:
-#    parameter_block (filename, e.g., MOM_input)
-#        parameter_group (namelist, e.g., MOM_list_1_combo)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., DT_THERM: [3600.0 ,108000.0])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., DIABATIC_FIRST:[True   , False])
-# In the above example, there will be 2 individual perturbation experiments generated are name as DT_THERM_3600_DIABATIC_FIRST_True, DT_THERM_108000_DIABATIC_FIRST_False.
-#
-# (6) User-defined perturbation experiment directory names [optional] with (4) or (5):
-#    filename+xxx: list of strings (e.g., MOM_input_dir_test1: ['test_b', 'test_20'])
-#    parameter_block (filename, e.g., MOM_input)
-#        parameter_group (namelist, e.g., MOM_list_test)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., HFREEZE: [14, 16])
-# In the above example, there will be 2 individual perturbation experiments generated are name as test_b, test_20.
-#
-#    filename+xxx: list of strings (e.g., MOM_input_dir_test2: ['test_c', 'test_30'])
-#    parameter_block (filename, e.g., MOM_input)
-#        parameter_group (namelist, e.g., MOM_list_1_combo)
-#            parameter1: list1 (tunning parameter: tunning values, e.g., DT_THERM: [3600.0 ,108000.0])
-#            parameter2: list2 (tunning parameter: tunning values, e.g., DIABATIC_FIRST:[True   , False])
-# In the above example, there will be 2 individual perturbation experiments generated are name as test_c, test_30.
-#
-# 3. cpl_dt type:
-# Similar to the above two types, the only differences are: 
-# the [optional] perturbation experiment directory names shall start with `runseq`, and
-# the string of `parameter_group` of cpl_dt type is fixed and always start with `runseq_list`.
+#     cross_block: (Required: may append other strings after "cross_block").
+#         cross_block_dirs: list of directory names (Optional - user-defined: filename must be appended with "_dirs", you may append other strings after "_dirs").
+#         filename:
+#             groupname_combo: (Required: for f90 namelists or nuopc.runconfig, just the group name; for MOM input, "MOM_list", nuopc.runseq, "runseq_list", then append "_combo" at the end).
+#                 parameter1: list of values
+#                 parameter2: list of values
+#                 ...
+#         filename:
+#             groupname_combo: (Required: for f90 namelists or nuopc.runconfig, just the group name; for MOM input, "MOM_list", nuopc.runseq, "runseq_list", then append "_combo" at the end).
+#                 parameter1: list of values
+#                 parameter2: list of values
+#                 ...
+#         ...
+#     ...
 
-# The following namelist options are provided for demonstration purposes.
-# Please note that parameters should be determined by the underlying physics of the model.
-# So, some configurations may not run successfully or produce valid results.
+# The following namelist options are provided as examples.
+# Note: Parameters should be based on the underlying physics.
+# Some configurations may fail to run or produce invalid results.
+# 1.1 Single parameter tuning within a single file using default perturbation directory names.
+# 1.2 Single parameter tuning within a single file using user-defined perturbation directory names.
+# 2.1 Multi-parameter tuning within a single group in a single file using default perturbation directory names.
+# 2.2 Multi-parameter tuning within a single group in a single file using user-defined perturbation directory names.
+# 3. Multi-parameter tuning across multiple files.
 """
     config_namelists = [
         {
             "key": "namelists",
             "value": {
                 "ice_in": {
-                    "shortwave_nml_combo": {
-                        "albicei": [0.36, 0.39, 0.47],
-                        "albicev": [0.78, 0.81, 0.90],
+                    "ponds_nml": {
+                        "dpscale": [0.002, 0.003],
+                        "rfracmax": [1.1, 1.2],
                     },
-                    "ice_in_dir": ["icet1", "icet2", "icet3", "icet4"],
+                    "ice_in_dirs_test": ["icet1", "icet2", "icet3", "icet4"],
                     "shortwave_nml": {
                         "ahmax": [0.2, 0.3],
                         "r_snw": [0.1, 0.2],
                     },
-                    "ice_in_test": ["cice_mu_ta", "cice_mu_taa", "cice_ta_mu"],
-                    "dynamics_nml_combo": {
-                        "mu_rdg": [2, 3, 4],
-                        "turning_angle": [0, 1, 2],
-                    },
-                    "thermo_nml": {
-                        "chio": [0.001],
-                    },
-                },
-                "input.nml": {
-                    "diag_manager_nml_combo": {
-                        "max_axes": [450],
-                        "max_files": [250],
-                        "max_num_axis_sets": [250],
-                    },
-                },
-                "drv_in": {
-                    "debug_inparm_nml": {"create_esmf_pet_files": [".true."]},
                 },
                 "MOM_input": {
-                    "MOM_input_dir1": ["lexpt0", "lexpt1"],
-                    "MOM_list1_combo": {
-                        "DT_THERM": [3600.0, 108000.0],
-                        "DIABATIC_FIRST": [True, False],
-                    },
-                    "MOM_input_dir2": ["expt5"],
-                    "MOM_list2": {"THICKNESSDIFFUSE": [False]},
-                    "MOM_list3": {"HFREEZE": [12, 14]},
-                    "MOM_input_dir10": [
-                        "min_depth0",
-                        "min_depth0_5",
-                        "max_depth_6000m",
-                        "max_depth_7000m",
-                    ],
                     "MOM_list4": {
                         "MINIMUM_DEPTH": [0, 0.5],
-                        "MAXIMUM_DEPTH": [6000.0, 7000.0],
+                        "MAXIMUM_DEPTH": [6000.0, 7000.0, 8000.0],
                     },
-                    "MOM_input_dir25": ["timestep_therm_test"],
-                    "MOM_list5_combo": {
-                        "DT_THERM": [900.0],
-                        "DIABATIC_FIRST": [False],
-                        "THERMO_SPANS_COUPLING": [True],
+                    "MOM_input_dirs1": ["lexpt0", "lexpt1"],
+                    "MOM_list1_combo": {
+                        "DT_THERM": [3600.0, 108000.0],
+                        "DIABATIC_FIRST": [False, False],
+                        "THERMO_SPANS_COUPLING": [True, True],
                     },
                 },
-                "nuopc.runseq": {
-                    "runseq_expt_dir1": ["cpl_dt1", "cpl_dt2"],
-                    "runseq_list1": {
-                        "cpl_dt": [1800.0, 3600.0],
+                "cross_block2": {
+                    "cross_block2_dirs": ["cg_1", "cg_2"],
+                    "nuopc.runconfig": {
+                        "CLOCK_attributes_combo": {
+                            "restart_n": [1, 1],
+                            "restart_option": ["ndays", "ndays"],
+                            "stop_n": [1, 1],
+                            "stop_option": ["ndays", "ndays"],
+                            "ocn_cpl_dt": [1800.0, 7200.0],
+                        },
+                        "PELAYOUT_attributes_combo": {
+                            "ocn_ntasks": [168, 120],
+                        },
+                    },
+                    "config.yaml": {
+                        "config_list1_combo": {
+                            "ncpus": [192, 144],
+                            "mem": ["768GB", "576GB"],
+                        },
+                    },
+                    "ice_in": {
+                        "shortwave_nml_combo": {
+                            "albicei": [0.36, 0.39],
+                            "albicev": [0.78, 0.81],
+                        },
+                        "ponds_nml_combo": {
+                            "dpscale": [0.002, 0.003],
+                        },
+                    },
+                    "MOM_input": {
+                        "MOM_list1_combo": {
+                            "DT_THERM": [3600.0, 7200.0],
+                            "DIABATIC_FIRST": [False, False],
+                            "THERMO_SPANS_COUPLING": [True, True],
+                            "DTBT_RESET_PERIOD": [3600.0, 7200.0],
+                        },
+                    },
+                    "nuopc.runseq": {
+                        "runseq_list1_combo": {
+                            "cpl_dt": [1800.0, 7200.0],
+                        },
                     },
                 },
             },
-        }
+        },
+    ]
+
+    # Descriptions and configs for Perturbation Experiment Setup (Optional)
+    descrpt_perturb_setup = """
+# ============ Perturbation Experiment Setup (Optional - access-om3) =======================
+# Configure settings for perturbation experiments. Currently, only `nuopc.runconfig` is supported.
+# If conducting parameter tuning for `nuopc.runconfig`, any pre-existing settings in this section 
+# will be purged by the above namelist tunning.
+"""
+    config_perturb_setup = [
+        {
+            "key": "perturb_run_config",
+            "value": {
+                "CLOCK_attributes": {
+                    "stop_option": "nyears",
+                    "stop_n": 1,
+                    "restart_option": "nyears",
+                    "restart_n": 1,
+                },
+            },
+        },
     ]
 
     descrpt_runs = """
 # ============ Control experiment and perturbation Runs ===================================
 # This section configures the settings for running control experiments and their corresponding perturbation tests.
-# Key parameters include the number of runs, restart options, and directory management for output.
     """
     config_runs = [
         {
@@ -498,12 +473,13 @@ if __name__ == "__main__":
     write_config_yaml_file(
         yaml_file_path,
         [
+            (descrpt_model_sel, model_sel),
             (descrpt_util, config_util),
             (descrpt_diag, config_diag),
             (descrpt_control, config_control),
             (descrpt_control_expt, config_control_expt),
-            (descrpt_perturb_setup, config_perturb_setup),
             (descrpt_namelists, config_namelists),
+            (descrpt_perturb_setup, config_perturb_setup),
             (descrpt_runs, config_runs),
         ],
     )
