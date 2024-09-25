@@ -55,7 +55,7 @@ The **ACCESS-OM Experiment Manager** is a Python-based tool designed to streamli
     $ ./Expts_manager.py -h
     usage: Expts_manager.py [-h] [INPUT_YAML]
     
-    Manage ACCESS-OM3 experiments. Latest version and help: https://github.com/minghangli-uni/Expts_manager
+    Manage both ACCESS-OM2 and ACCESS-OM3 experiments. Latest version and help: https://github.com/COSIMA/om3-scripts/pull/34
     
     positional arguments:
       INPUT_YAML  YAML file specifying parameter values for expt runs. Default is Expts_manager.yaml
