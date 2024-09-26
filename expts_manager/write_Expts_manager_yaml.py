@@ -254,7 +254,7 @@ if __name__ == "__main__":
 # ============ Namelist Tunning ================================
 # Tune parameters across different model components.
 
-# Generlised structure
+# Generalised structure
 # 1. Single-parameter tunning within single file
 # namelists:
 #     filename: (Required).
