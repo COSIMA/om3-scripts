@@ -21,7 +21,7 @@ The **ACCESS-OM Experiment Manager** is a Python-based tool designed to streamli
         - MOM6 for **ACCESS-OM3**,
         - Fortran namelists for both **ACCESS-OM2** and **ACCESS-OM3**,
         - Coupling timesteps (`nuopc.runseq`) for **ACCESS-OM3**,
-        - Component settings (`nuopc.runconfig`) **ACCESS-OM3**.
+        - Component settings (`nuopc.runconfig`) for **ACCESS-OM3**.
 
     - Automation of experiment initiation, managing the number of runs to be executed.
     - Ability to skip experiment runs if parameters are identical to those of the control experiment. This functionality can be toggled (currently applicable only to `f90nml`).
