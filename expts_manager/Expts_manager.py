@@ -446,9 +446,8 @@ class Expts_manager(object):
         Raises:
             - Warning: If no namelist configurations are provided, the function issues a warning indicating that no parameter tuning tests will be conducted.
         """
-        namelists = self.indata[
-            "namelists"
-        ]  # main section, top level key that groups different namlists
+        # main section, top level key that groups different namlists
+        namelists = self.indata["namelists"]
         if not namelists:
             warnings.warn(
                 "NO namelists were provided, hence there are no parameter-tunning tests!",
@@ -617,8 +616,13 @@ class Expts_manager(object):
         """
         if k_sub.startswith(self.CONFIG_prefix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        elif k_sub.startswith(expt_dir_name):
+            pass
         else:
-            raise ValueError(f"groupname must start with {self.CONFIG_prefix}!")
+            raise ValueError(
+                f"groupname must start with `{self.CONFIG_prefix}` "
+                f"or [optional] user-defined directory key must start with `{expt_dir_name}`!"
+            )
 
     def _handle_runconfig_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -630,10 +634,13 @@ class Expts_manager(object):
             or k_sub.endswith(self.combo_suffix)
         ):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        elif k_sub.startswith(expt_dir_name):
+            pass
         else:
             raise ValueError(
-                f"groupname must end with either ({self.runconfig_suffix1} or {self.runconfig_suffix2} for single parameter tunning "
-                f"or {self.combo_suffix} for multiple parameter tunning!"
+                f"groupname must end with either (`{self.runconfig_suffix1}` or `{self.runconfig_suffix2}` for single parameter tunning "
+                f"or `{self.combo_suffix}` for multiple parameter tunning "
+                f"or [optional] user-defined directory key must start with `{expt_dir_name}`!"
             )
 
     def _handle_nml_group(self, k, k_sub, expt_dir_name, nmls):
@@ -642,10 +649,13 @@ class Expts_manager(object):
         """
         if k_sub.endswith(self.nml_suffix) or k_sub.endswith(self.combo_suffix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        elif k_sub.startswith(expt_dir_name):
+            pass
         else:
             raise ValueError(
-                f"groupname must end with either {self.nml_suffix} for single parameter tunning "
-                f"or {self.combo_suffix} for multiple parameter tunning!"
+                f"groupname must end with either `{self.nml_suffix}` for single parameter tunning "
+                f"or `{self.combo_suffix}` for multiple parameter tunning "
+                f"or [optional] user-defined directory key must start with `{expt_dir_name}`!"
             )
 
     def _handle_mom6_group(self, k, k_sub, expt_dir_name, nmls):
@@ -664,8 +674,13 @@ class Expts_manager(object):
                 expt_dir_name,
                 commt_dict=commt_dict,
             )
+        elif k_sub.startswith(expt_dir_name):
+            pass
         else:
-            raise ValueError(f"groupname must start with {self.MOM_prefix}!")
+            raise ValueError(
+                f"For the MOM6 input, the groupname must start with `{self.MOM_prefix}` "
+                f"or [optional] user-defined directory key must start with `{expt_dir_name}`!"
+            )
 
     def _handle_cpl_dt_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -673,8 +688,13 @@ class Expts_manager(object):
         """
         if k_sub.startswith(self.runseq_prefix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        elif k_sub.startswith(expt_dir_name):
+            pass
         else:
-            raise ValueError(f"groupname must start with {self.runseq_prefix}!")
+            raise ValueError(
+                f"groupname must start with `{self.runseq_prefix}` "
+                f"or [optional] user-defined directory key must start with `{expt_dir_name}`!"
+            )
 
     def _process_parameter_group_common(
         self, k, k_sub, nmls, expt_dir_name, commt_dict=None
@@ -802,7 +822,7 @@ class Expts_manager(object):
         Sets up perturbation experiments based on the YAML input file provided in `Expts_manager.yaml`.
         """
         for i, param_dict in enumerate(self.param_dict_change_list):
-            print(f"-- {param_dict}")
+            print(f"-- tunning parameters: {param_dict}")
             # generate perturbation experiment directory names
             expt_name = self._generate_expt_names(i)
 
