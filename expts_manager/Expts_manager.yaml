@@ -265,7 +265,7 @@ check_duplicate_jobs: True
 # If duplicates are found, a message will be printed indicating the presence of duplicate runs and those runs will be skipped.
 
 check_skipping: False  
-# Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valids to nml type.            
+# Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valid for nml type.            
 # Default: False.            
 # Set to 'True' if you want the system to skip runs under specific criteria; otherwise, keep it 'False'. Currently only valids to nml type.
 
