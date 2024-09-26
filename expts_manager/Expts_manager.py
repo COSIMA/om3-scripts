@@ -298,7 +298,7 @@ class Expts_manager(object):
         # setup the control experiments
         self._setup_ctrl_expt()
 
-        # check exisiting pbs jobs
+        # check existing pbs jobs
         pbs_jobs = self._output_existing_pbs_jobs()
 
         # check duplicated running jobs
