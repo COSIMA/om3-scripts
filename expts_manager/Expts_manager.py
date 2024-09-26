@@ -83,6 +83,9 @@ class Expts_manager(object):
     def __init__(
         self,
         MOM_prefix: str = "MOM_list",
+        CONFIG_prefix: str = "config_list",
+        runconfig_suffix1: str = "_attributes",
+        runconfig_suffix2: str = "_modelio",
         nml_suffix: str = "_nml",
         runseq_prefix: str = "runseq_list",
         combo_suffix: str = "_combo",
@@ -91,6 +94,9 @@ class Expts_manager(object):
 
         self.dir_manager = self.DIR_MANAGER
         self.MOM_prefix = MOM_prefix
+        self.CONFIG_prefix = CONFIG_prefix
+        self.runconfig_suffix1 = runconfig_suffix1
+        self.runconfig_suffix2 = runconfig_suffix2
         self.nml_suffix = nml_suffix
         self.runseq_prefix = runseq_prefix
         self.branch_perturb = branch_perturb
@@ -609,15 +615,26 @@ class Expts_manager(object):
         """
         Handles config.yaml and nuopc.runconfig parameter groups specific to `config` tag model.
         """
-        if k_sub.startswith("config_list"):
+        if k_sub.startswith(self.CONFIG_prefix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        else:
+            raise ValueError(f"groupname must start with {self.CONFIG_prefix}!")
 
     def _handle_runconfig_group(self, k, k_sub, expt_dir_name, nmls):
         """
         Handles config.yaml and nuopc.runconfig parameter groups specific to `config` tag model.
         """
-        if not k_sub.startswith("nuopc.runconfig_dirs"):
+        if (
+            not k_sub.endswith(self.runconfig_suffix1)
+            or k_sub.endswith(self.runconfig_suffix2)
+            or k_sub.endswith(self.combo_suffix)
+        ):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        else:
+            raise ValueError(
+                f"groupname must end with either ({self.runconfig_suffix1} or {self.runconfig_suffix2} for single parameter tunning "
+                f"or {self.combo_suffix} for multiple parameter tunning!"
+            )
 
     def _handle_nml_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -625,6 +642,11 @@ class Expts_manager(object):
         """
         if k_sub.endswith(self.nml_suffix) or k_sub.endswith(self.combo_suffix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        else:
+            raise ValueError(
+                f"groupname must end with either {self.nml_suffix} for single parameter tunning "
+                f"or {self.combo_suffix} for multiple parameter tunning!"
+            )
 
     def _handle_mom6_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -642,6 +664,8 @@ class Expts_manager(object):
                 expt_dir_name,
                 commt_dict=commt_dict,
             )
+        else:
+            raise ValueError(f"groupname must start with {self.MOM_prefix}!")
 
     def _handle_cpl_dt_group(self, k, k_sub, expt_dir_name, nmls):
         """
@@ -649,6 +673,8 @@ class Expts_manager(object):
         """
         if k_sub.startswith(self.runseq_prefix):
             self._process_parameter_group_common(k, k_sub, nmls, expt_dir_name)
+        else:
+            raise ValueError(f"groupname must start with {self.runseq_prefix}!")
 
     def _process_parameter_group_common(
         self, k, k_sub, nmls, expt_dir_name, commt_dict=None
