@@ -441,9 +441,9 @@ if __name__ == "__main__":
         {
             "key": "check_skipping",
             "value": False,
-            "comment": "\n# Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valids to nml type.\
+            "comment": "\n# Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valid for nml type.\
             \n# Default: False.\
-            \n# Set to 'True' if you want the system to skip runs under specific criteria; otherwise, keep it 'False'. Currently only valids to nml type.\n",
+            \n# Set to 'True' if you want the system to skip runs under specific criteria; otherwise, keep it 'False'. Currently only valid for nml type.\n",
         },
         {
             "key": "force_restart",
