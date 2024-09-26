@@ -65,38 +65,14 @@ def main(input_path, output_path):
     monthly_data = []
     time_values = []
 
-    # Loop over each month and open the corresponding file
-    for month in range(1, 13):
-        # Construct the file name
-        file_path = file_template.format(month)
 
-        try:
-            # Open the dataset
-            ds = xr.open_dataset(file_path)
+file_paths = [file_template.format(month) for month in range(1,13) ]
 
-            # Process the variable to be smoothed
-            if variable_to_smooth in ds.data_vars:
-                data = ds[variable_to_smooth].isel(ZT=0).load()
-                data_np = np.squeeze(data.values)
-                # Append data to list
-                monthly_data.append(data_np)
-                time_values.append(
-                    ds["time"].values[0]
-                )  # Extract the actual time value
-        except FileNotFoundError:
-            print(f"File not found: {file_path}")
+ds = xr.open_mfdataset(file_paths, chunks={'GRID_Y_T':-1, 'GRID_X_T':-1}))
 
-    # Concatenate the data across all months along the time dimension
-    concatenated_data = np.stack(monthly_data, axis=0)
+salt_da = ds[variable_to_smooth].isel(ZT=0)
 
-    # Loop through each month for smoothing
-    smoothed_monthly_data = []
-    for i in range(concatenated_data.shape[0]):
-        # Smooth each month's data
-        data_np_smoothed = smooth2d(concatenated_data[i, :, :])
-        smoothed_monthly_data.append(data_np_smoothed)
-
-    smoothed_data_np = np.stack(smoothed_monthly_data, axis=0)
+salt_smoothed_da = xr.apply_ufunc(smooth2d, salt_da, input_core_dims=[['GRID_Y_T','GRID_X_T']], output_core_dims=[['GRID_Y_T','GRID_X_T']], vectorize=True, dask='parallelized')
 
     # Create a new NetCDF file using netCDF4
     output_file = f"{output_path}/salt_sfc_restore.nc"
