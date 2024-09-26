@@ -171,7 +171,7 @@ class Expts_manager(object):
         self.diag_path = None
 
         self.tmp_count = 0
-        self.group_count = 0
+        self.group_count = None
 
     def load_tools(self):
         """
@@ -776,7 +776,7 @@ class Expts_manager(object):
         Sets up perturbation experiments based on the YAML input file provided in `Expts_manager.yaml`.
         """
         for i, param_dict in enumerate(self.param_dict_change_list):
-            print(param_dict)
+            print(f"-- {param_dict}")
             # generate perturbation experiment directory names
             expt_name = self._generate_expt_names(i)
 
@@ -1023,13 +1023,6 @@ class Expts_manager(object):
             expt_path (str): The path to the experiment directory.
         """
         if self.startfrom_str != "rest":
-            # if exisiting restarts and not force generating restart, then skip.
-            existing_restarts = glob.glob(
-                os.path.join(self.base_path, "archive", "restart*")
-            )
-            if existing_restarts and not self.force_restart:
-                return
-
             link_restart = os.path.join("archive", "restart" + self.startfrom_str)
             # restart dir from control experiment
             restartpath = os.path.realpath(os.path.join(self.base_path, link_restart))
@@ -1044,9 +1037,18 @@ class Expts_manager(object):
             ):
                 if os.path.exists(dest) or os.path.islink(dest):
                     os.remove(dest)  # remove symlink
-                os.symlink(restartpath, dest)  # generate symlink
+                    print(f"-- Remove restart symlink: {dest}")
+                os.symlink(restartpath, dest)  # generate a new symlink
+                if self.force_restart:
+                    print(f"-- Restart symlink has been forced to be : {dest}")
+                else:
+                    print(f"-- Restart symlink: {dest}")
+            # print restart symlink on the screen
+            else:
+                print(f"-- Restart symlink: {dest}")
         else:
             restartpath = "rest"
+            print(f"-- Restart symlink: {restartpath}")
 
         return restartpath
 
