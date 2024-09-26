@@ -433,7 +433,7 @@ if __name__ == "__main__":
             "key": "check_duplicate_jobs",
             "value": True,
             "comment": "\n# Checks if there are duplicate PBS jobs within the same parent directory (`test_path`) based on their names.\
-            \n# This check is useful when you have existing running jobs and want to add additional tests, which helps avoid conflicts by ensuring new jobs dont duplicate exisiting ones in the same `test_path`.\
+            \n# This check is useful when you have existing running jobs and want to add additional tests, which helps avoid conflicts by ensuring new jobs don't duplicate existing ones in the same `test_path`.\
             \n# The check will not be triggered if the jobs are located in different `test_path`. It only applies to jobs within the same `test_path` directory.\
             \n# Default: True.\
             \n# If duplicates are found, a message will be printed indicating the presence of duplicate runs and those runs will be skipped.\n",
