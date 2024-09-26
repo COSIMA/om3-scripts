@@ -267,7 +267,7 @@ check_duplicate_jobs: True
 check_skipping: False  
 # Checks if certain runs should be skipped based on pre-existing conditions or results. Currently only valid for nml type.            
 # Default: False.            
-# Set to 'True' if you want the system to skip runs under specific criteria; otherwise, keep it 'False'. Currently only valids to nml type.
+# Set to 'True' if you want the system to skip runs under specific criteria; otherwise, keep it 'False'. Currently only valid for nml type.
 
 force_restart: False  
 # Controls whether to force a restart of the experiments regardless of existing initial conditions.            
