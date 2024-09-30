@@ -29,6 +29,7 @@ import numpy as np
 from scipy.ndimage import uniform_filter
 import argparse
 from pathlib import Path
+import os
 import sys
 
 # Add the root path for the common scripts
@@ -62,7 +63,7 @@ def main(input_path, output_path):
     ds = xr.open_mfdataset(file_paths, chunks={"GRID_Y_T": -1, "GRID_X_T": -1})
 
     # Get the sea surface salinity
-    salt_da = ds[variable_to_smooth].isel(ZT=0)
+    salt_da = ds[variable_to_smooth].isel(ZT=0, drop=True)
 
     # Smooth the salinity in x & y (for each month)
     salt_smoothed_da = xr.apply_ufunc(
@@ -84,9 +85,30 @@ def main(input_path, output_path):
 
     salt_smoothed_da["time"] = salt_smoothed_da.time.assign_attrs({"modulo": " "})
 
+    salt_ds = salt_smoothed_da.to_dataset()
+
+    # Check git status of this .py file
+    this_file = os.path.normpath(__file__)
+    runcmd = f"python3 {os.path.basename(this_file)} --input_path {input_path} --output_path {output_path}"
+    salt_ds = salt_ds.assign_attrs(
+        {
+            "history": get_provenance_metadata(this_file, runcmd),
+            "input_files": [f"{f}(md5sum:{md5sum(f)})" for f in file_paths],
+        }
+    )
+
     # Save
     output_file = f"{output_path}/salt_sfc_restore.nc"
-    salt_smoothed_da.to_netcdf(output_file)
+    salt_ds.to_netcdf(
+        output_file,
+        encoding={
+            variable_to_smooth: {
+                "chunksizes": (1, len(ds.GRID_Y_T), len(ds.GRID_X_T)),
+                "compression": "zlib",
+                "complevel": 2,
+            }
+        },
+    )
 
     print(f"Concatenated and smoothed data saved to {output_file}")
 
