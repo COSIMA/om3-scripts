@@ -8,7 +8,7 @@
 This script processes and smooths sea water salinity data from the initial conditions NetCDF files generated using https://github.com/COSIMA/initial_conditions_access-om2.
 It applies a uniform smoothing filter to the surface layer (0m depth) of the salinity for each month and concatenates the smoothed data into a single output NetCDF file.
 
-The input files are 'woa23_ts_<month>_mom025.nc',
+The input files are 'woa23_ts_<month>_mom<resolution>.nc',
 
 The script creates an output file 'salt_sfc_restore.nc' which contains the smoothed 
 and concatenated salinity data for 12 months.
@@ -56,7 +56,10 @@ def smooth2d(src):
 def main(input_path, output_path):
     variable_to_smooth = "salt"
 
-    file_template = f"{input_path}/woa23_ts_{{:02d}}_mom025.nc"
+    # Resolution from the input path
+    resolution = os.path.basename(os.path.normpath(input_path))
+
+    file_template = f"{input_path}/woa23_ts_{{:02d}}_mom{resolution}.nc"
 
     file_paths = [file_template.format(month) for month in range(1, 13)]
 
