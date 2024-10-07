@@ -82,6 +82,7 @@ class Expts_manager(object):
 
     def __init__(
         self,
+        force_overwrite_tools: bool = False,
         MOM_prefix: str = "MOM_list",
         CONFIG_prefix: str = "config_list",
         runconfig_suffix1: str = "_attributes",
@@ -93,6 +94,7 @@ class Expts_manager(object):
     ):
 
         self.dir_manager = self.DIR_MANAGER
+        self.force_overwrite_tools = force_overwrite_tools
         self.MOM_prefix = MOM_prefix
         self.CONFIG_prefix = CONFIG_prefix
         self.runconfig_suffix1 = runconfig_suffix1
@@ -127,6 +129,7 @@ class Expts_manager(object):
         self.indata = self._read_ryaml(yamlfile)
 
         self.model = self.indata["model"]
+        self.force_overwrite_tools = self.indata.get("force_overwrite_tools", False)
         self.utils_url = self.indata.get("utils_url", None)
         self.utils_dir_name = self.indata.get("utils_dir_name", None)
         self.utils_branch_name = self.indata.get("utils_branch_name", None)
@@ -186,15 +189,27 @@ class Expts_manager(object):
 
         # currently import from a fork: https://github.com/minghangli-uni/om3-utils
         # will update the tool when it is merged to COSIMA/om3-utils
-        def _clone_repo(branch_name, url, path, tool_name):
-            if not os.path.isdir(path):
+        def _clone_repo(branch_name, url, path, tool_name, force_overwrite_tools):
+            if os.path.exists(path) and os.path.isdir(path):
+                if force_overwrite_tools:
+                    print(
+                        f"-- Force_overwrite_tools is activated, hence removing existing {tool_name}: {path}"
+                    )
+                    shutil.rmtree(path)
+                    print(f"Cloning {tool_name} for use!")
+                    command = (
+                        f"git clone --branch {branch_name} {url} {path} --single-branch"
+                    )
+                    subprocess.run(command, shell=True, check=True)
+                else:
+                    print(f"{tool_name} already exists, hence skips cloning!")
+            else:
+                print(f"Cloning {tool_name} for use!")
                 command = (
                     f"git clone --branch {branch_name} {url} {path} --single-branch"
                 )
                 subprocess.run(command, shell=True, check=True)
-                print(f"Cloning {tool_name} for use!")
-            else:
-                print(f"{path} already exists!")
+            print(f"Finished cloning {tool_name}!")
 
         # om3-utils is a must for om3 but not required for access-om2.
         utils_path = (
@@ -214,7 +229,11 @@ class Expts_manager(object):
 
         if self.model == "access-om3":
             _clone_repo(
-                self.utils_branch_name, self.utils_url, utils_path, self.utils_dir_name
+                self.utils_branch_name,
+                self.utils_url,
+                utils_path,
+                self.utils_dir_name,
+                self.force_overwrite_tools,
             )
 
         # make_diag_table is [optional]
@@ -226,7 +245,11 @@ class Expts_manager(object):
 
         if self.diag_path is not None:
             _clone_repo(
-                self.diag_branch_name, self.diag_url, self.diag_path, self.diag_dir_name
+                self.diag_branch_name,
+                self.diag_url,
+                self.diag_path,
+                self.diag_dir_name,
+                self.force_overwrite_tools,
             )
             sys.path.extend([utils_path, self.diag_path])
         else:

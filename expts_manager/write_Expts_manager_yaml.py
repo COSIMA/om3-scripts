@@ -88,6 +88,10 @@ if __name__ == "__main__":
 """
     config_util = [
         {
+            "key": "force_overwrite_tools",
+            "value": "False",
+        },
+        {
             "key": "utils_url",
             "value": "git@github.com:minghangli-uni/om3-utils.git",
             "comment": "# Git URL for the utility tool repository",

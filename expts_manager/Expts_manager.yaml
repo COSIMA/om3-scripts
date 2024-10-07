@@ -17,6 +17,7 @@ model: access-om3  # Specify the model to be used. Options: 'access-om2', 'acces
 # 1. Parse parameters and comments from `MOM_input` in MOM6.
 # 2. Read and write the `nuopc.runconfig` file.
 
+force_overwrite_tools: False
 utils_url: git@github.com:minghangli-uni/om3-utils.git  # Git URL for the utility tool repository
 utils_branch_name: main  # The branch for which the utility tool will be checked out
 utils_dir_name: om3-utils  # Directory name for the utility tool (user-defined)
