@@ -35,7 +35,7 @@ def description():
         metadata = YAML().load(metadata_filename)
         uuid = metadata.get(UUID_FIELD, None)
     else:
-        warn(f"{METADATA_FILENAME} not found in archive folder")
+        warn(f"{METADATA_FILENAME} not found in config folder")
         uuid = False
 
     # Check git status of this .py file
