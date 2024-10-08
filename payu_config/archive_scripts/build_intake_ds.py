@@ -22,7 +22,7 @@ from scripts_common import get_provenance_metadata, md5sum
 
 METADATA_FILENAME = "metadata.yaml"
 UUID_FIELD = "experiment_uuid"
-ARCHIVE_PATH = "archive/"
+ARCHIVE_PATH = "archive"
 
 
 def description():
