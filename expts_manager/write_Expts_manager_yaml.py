@@ -153,8 +153,8 @@ if __name__ == "__main__":
         },
         {
             "key": "base_commit",
-            "value": "2bc6107",
-            "comment": "# Commit hash to use",
+            "value": '"2bc6107"',
+            "comment": "# Commit hash to use; Please ensure it is a string!",
         },
         {
             "key": "base_dir_name",

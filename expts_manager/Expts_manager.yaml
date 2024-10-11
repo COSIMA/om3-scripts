@@ -34,7 +34,7 @@ diag_pert: False  # Set to 'True' to modify the diagnostic table for perturbatio
 # ============ Control Experiment Setup ===============================================
 
 base_url: git@github.com:ACCESS-NRI/access-om3-configs.git  # Git URL for the control experiment repository
-base_commit: 2bc6107  # Commit hash to use
+base_commit: "2bc6107"  # Commit hash to use; Please ensure it is a string!
 base_dir_name: Ctrl-1deg_jra55do_ryf  # Directory name for cloning (user-defined)
 base_branch_name: ctrl  # Branch name for the experiment (user-defined)
 test_path: test  # Relative path for all test (control and perturbation) runs (user-defined)
