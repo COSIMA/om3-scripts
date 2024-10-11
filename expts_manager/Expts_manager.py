@@ -356,7 +356,9 @@ class Expts_manager(object):
             f"Check out commit {self.base_commit} and creat new branch {self.base_branch_name}!"
         )
         # checkout the new branch from the specific template commit
-        templaterepo.git.checkout("-b", self.base_branch_name, str(self.base_commit) + "^0")
+        templaterepo.git.checkout(
+            "-b", self.base_branch_name, str(self.base_commit) + "^0"
+        )
 
     def _copy_diag_table(self, path):
         """
