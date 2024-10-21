@@ -40,6 +40,7 @@ License: Apache 2.0 License http://www.apache.org/licenses/LICENSE-2.0.txt
 # ===========================================================================
 import os
 import re
+import warnings
 from esmfRegion import ESMFRegion
 import time
 
@@ -76,22 +77,27 @@ def collect_runtime_tot(
 
 def _list_esmf_files(dir_path, profile_prefix, esmf_summary, summary_profile):
     """Lists ESMF files based on a prefix."""
-    files = os.listdir(dir_path)
-    if not esmf_summary:
-        # ESMF_Profile.xxxx
-        matching_files = [
-            file
-            for file in files
-            if file.startswith(profile_prefix) and file != summary_profile
-        ]
-        matching_files.sort(key=lambda x: int(x[len(profile_prefix) :]))
-    else:
-        # ESMF_Profile.summary
-        matching_files = [summary_profile]
+    try:
+        files = os.listdir(dir_path)
+        if not esmf_summary:
+            # ESMF_Profile.xxxx
+            matching_files = [
+                file
+                for file in files
+                if file.startswith(profile_prefix) and file != summary_profile
+            ]
+            matching_files.sort(key=lambda x: int(x[len(profile_prefix) :]))
+        else:
+            # ESMF_Profile.summary
+            matching_files = [summary_profile]
 
-    matching_files_path = [
-        os.path.join(dir_path, matching_file) for matching_file in matching_files
-    ]
+        matching_files_path = [
+            os.path.join(dir_path, matching_file) for matching_file in matching_files
+        ]
+    except FileNotFoundError:
+        warnings.warn(f"Directory {dir_path} does not exist! Skipping!")
+        matching_files_path = []
+
     return matching_files_path
 
 
