@@ -22,7 +22,13 @@ The tool supports two profiling data formats, where metrics are included in the 
  2. `ESMF_Profile.summary`: (0. count, 1. PETs , 2. mean     , 3. min_time, 4. max_time, 5. min_PET, 6. max_PET)
 
 ## Usage
-Simply specify the path to the profiling logs, along with any specific regions of interest.
+Before using the scripts, ensure that ESMF profiling log files are generated first. To enable profiling, simply set the `ESMF_RUNTIME_PROFILE` and `ESMF_RUNTIME_PROFILE_OUTPUT` options in the `config.yaml` file for the desired configuration:
+```yaml
+env:
+  ESMF_RUNTIME_PROFILE: "ON"
+  ESMF_RUNTIME_PROFILE_OUTPUT: "TEXT SUMMARY"
+```
+After running the configuration, specify the path to the profiling logs, along with any specific regions of interest.
 
 One example for demonstration:
 ----------
