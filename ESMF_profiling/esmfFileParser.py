@@ -63,8 +63,6 @@ def collect_runtime_tot(
         esmf_region_all = []
         for subfile in subfiles_path:
             with open(subfile, "r") as f:
-                eff_lines = []
-                skip = False
                 esmf_region = ESMFProfileTrees(esmf_summary).build_ESMF_trees(f)
                 esmf_region_all.append(esmf_region)
 
