@@ -219,7 +219,7 @@ if __name__ == "__main__":
     # index for different profiling files (ESMF_Profile.xxxx or ESMF_Profile.summary)
     # ESMF_Profile.xxxx   : (0. count, 1. total, 2. self_time, 3. mean    , 4. min_time, 5. max_time           )
     # ESMF_Profile.summary: (0. count, 1. PETs , 2. mean     , 3. min_time, 4. max_time, 5. min_PET, 6. max_PET)
-    # It takes ~20 seconds to read and output 1440 ESMF_Profile.xxxx files, 
+    # It takes ~20 seconds to read and output 1440 ESMF_Profile.xxxx files,
     # while reading the ESMF_Profile.summary file only takes about 0.02 seconds.
     time_start = time.time()
     ESMF_path = [
