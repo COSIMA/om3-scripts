@@ -199,7 +199,7 @@ class ESMFProfileTrees(object):
         return esmf_region
 
     def _parse_line(self, line):
-        """Parses a line from an ESMF file based on summary flag."""
+        """Parses a line from an ESMF file."""
         parts = re.split(r"\s{2,}", line.strip())
         if not self.esmf_summary:
             name = parts[0]
