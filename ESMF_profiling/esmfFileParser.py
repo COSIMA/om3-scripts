@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ESMF Profiling tool
+ESMF Profiling tool - OM3
 The ESMF Profiling tool is a Python-based tool designed to read and process 
 performance profile data from ESMF profiling log files. It provides a 
 structured way to extract hierachical timing and computational stats for 
@@ -52,6 +52,7 @@ def collect_runtime_tot(
     esmf_summary=True,
     index=2,
 ):
+
     runtime_tot = []
     for i in range(len(ESMF_path)):
         subfiles_path = _list_esmf_files(
@@ -95,63 +96,77 @@ def _list_esmf_files(dir_path, profile_prefix, esmf_summary, summary_profile):
     except FileNotFoundError:
         warnings.warn(f"Directory {dir_path} does not exist! Skipping!")
         matching_files_path = []
-
     return matching_files_path
 
 
 def _region_time_consumption(regionNames, esmf_region_all, index, esmf_summary):
-    """Calculates time consumption for specific regions."""
+    """Calculates time consumption for specific regions"""
     runtime = {}
-    for varname in regionNames:
-        runtime[varname] = [
-            _find_region_value(sub_ESMF_region, varname, esmf_summary)[0][index]
+
+    for regionName in regionNames:
+        region_values = [
+            _find_region_values(sub_ESMF_region, regionName, esmf_summary)
             for sub_ESMF_region in esmf_region_all
         ]
+
+        # Process each region value
+        for region_value in region_values:
+            for key, val in region_value.items():
+                if val and val[0] is not None:
+                    if key not in runtime:
+                        runtime[key] = []
+                    runtime[key].append(val[index])
     return runtime
 
 
-def _find_region_value(region, target_region, esmf_summary):
-    """Recursively searches for a region value based on its hierarchical path."""
+def _find_region_values(region, target_region, esmf_summary):
+    """
+    Searches for all region values based on a hierarchical path prefix.
+    """
     target_parts = target_region.split("/")
+    matches = {}
     default_nans = (None,) * 6
 
-    if not target_parts:
-        return default_nans, False
+    def search_region(region, path, current_path):
+        """Recursive helper function to search regions."""
+        if region.name.startswith(path[0]):
+            if len(path) == 1:
+                matches[current_path] = _get_region_data(region, esmf_summary)
+                return
 
-    if region.name == target_parts[0]:
-        if len(target_parts) == 1:
-            if not esmf_summary:
-                return (
-                    region.count,
-                    region.total,
-                    region.self_time,
-                    region.mean,
-                    region.min_time,
-                    region.max_time,
-                ), True
-            else:
-                return (
-                    region.count,
-                    region.PETs,
-                    region.mean,
-                    region.min_time,
-                    region.max_time,
-                    region.min_PET,
-                    region.max_PET,
-                ), True
+            # Continue searching in children if more path components remain
+            for child in region.children:
+                search_region(child, path[1:], f"{current_path}/{child.name}")
 
-        for child in region.children:
-            result, found = _find_region_value(
-                child, "/".join(target_parts[1:]), esmf_summary
+    def _get_region_data(region, esmf_summary):
+        """Returns the region data tuple based on esmf_summary setting."""
+        return (
+            (
+                region.count,
+                region.total,
+                region.self_time,
+                region.mean,
+                region.min_time,
+                region.max_time,
             )
-            if found:
-                return result, found
+            if not esmf_summary
+            else (
+                region.count,
+                region.PETs,
+                region.mean,
+                region.min_time,
+                region.max_time,
+                region.min_PET,
+                region.max_PET,
+            )
+        )
 
-    for child in region.children:
-        result, found = _find_region_value(child, target_region, esmf_summary)
-        if found:
-            return result, found
-    return default_nans, False
+    # recursive search
+    search_region(region, target_parts, region.name)
+
+    if not matches:
+        print(f"No matches found for target prefix: {target_region}")
+    return matches if matches else {f"{target_region}": default_nans}
 
 
 class ESMFProfileTrees(object):
@@ -231,7 +246,11 @@ if __name__ == "__main__":
     ]
     runtime_tot = collect_runtime_tot(
         ESMF_path,
-        regionNames=["[ESMF]"],
+        regionNames=[
+            "[ESMF]",
+            "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[OCN] RunPhase1",
+            "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED]",
+        ],
         profile_prefix="ESMF_Profile.",
         esmf_summary=True,
         index=2,
