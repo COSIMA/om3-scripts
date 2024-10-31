@@ -241,9 +241,7 @@ if __name__ == "__main__":
     # It takes ~20 seconds to read and output 1440 ESMF_Profile.xxxx files,
     # while reading the ESMF_Profile.summary file only takes about 0.02 seconds.
     time_start = time.time()
-    ESMF_path = [
-        "/g/data/tm70/ml0072/COMMON/git_repos/COSIMA_om3-scripts/expts_manager/product1_0.25deg_scaling_performance/pt_2_test/archive/output000"
-    ]
+    ESMF_path = ["/g/data/tm70/ml0072/ESMF_Profile_test_example"]
     runtime_tot = collect_runtime_tot(
         ESMF_path,
         regionNames=[

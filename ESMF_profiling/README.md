@@ -37,7 +37,7 @@ One example for demonstration:
 ----------
 ```python
 # Collect runtime info for specific regions
-ESMF_path = ['/path/to/your/ESMF/output/files']
+ESMF_path = ['/path/to/your/ESMF/output/files']  # '/g/data/tm70/ml0072/ESMF_Profile_test_example'
 regionNames=[
     "[ESMF]",
     "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[OCN] RunPhase1",
