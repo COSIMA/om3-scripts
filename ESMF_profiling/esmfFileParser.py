@@ -43,7 +43,7 @@ import re
 import warnings
 from esmfRegion import ESMFRegion
 import time
-from pprint import pprint
+
 
 def collect_runtime_tot(
     ESMF_path,
@@ -258,11 +258,11 @@ if __name__ == "__main__":
     time_end = time.time()
     elaps = time_end - time_start
     print(elaps)
-    pprint(runtime_tot)
+    print(runtime_tot)
 
-    # The above example presents three items in `regionNames` variable, 
-    # where "[ESMF]" and "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[OCN] RunPhase1" are the exact region names in ESMF profile files, 
-    # while "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED]" is a prefix for: 
+    # The above example presents three items in `regionNames` variable,
+    # where "[ESMF]" and "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[OCN] RunPhase1" are the exact region names in ESMF profile files,
+    # while "[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED]" is a prefix for:
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_aofluxes_run',
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_diag_accum',
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_diag_atm',
@@ -282,5 +282,4 @@ if __name__ == "__main__":
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_prep_ocn_avg',
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_profile',
     # '[ESMF]/[ensemble] RunPhase1/[ESM0001] RunPhase1/[MED] med_phases_restart_write'
-    ## Hence, this tool supports runtime collection for both exact match and prefix-based match. 
-
+    ## Hence, this tool supports runtime collection for both exact match and prefix-based match.
