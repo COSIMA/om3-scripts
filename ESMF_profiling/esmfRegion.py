@@ -38,7 +38,7 @@ License: Apache 2.0 License http://www.apache.org/licenses/LICENSE-2.0.txt
 
 # ===========================================================================
 class ESMFRegion(object):
-    def __init__(self, collect_data, esmf_summary=False):
+    def __init__(self, collect_data, esmf_summary=True):
         if not esmf_summary:
             self.name = collect_data[0]
             self.count = collect_data[1]
