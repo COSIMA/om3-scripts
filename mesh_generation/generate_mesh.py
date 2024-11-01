@@ -41,6 +41,8 @@ sys.path.append(str(path_root))
 
 from scripts_common import get_provenance_metadata, md5sum
 
+EARTH_R = 6.37122e6
+
 
 class BaseGrid:
 
@@ -153,8 +155,9 @@ class BaseGrid:
 
         if self.area is not None:
             ds["elementArea"] = xr.DataArray(
-                self.area.astype(np.float64),
+                (self.area / (EARTH_R * EARTH_R)).astype(np.float64),
                 dims=("elementCount"),
+                attrs={"units": "radians^2", "long_name": "area weights"},
             )
 
         # force no _FillValue (for now)
