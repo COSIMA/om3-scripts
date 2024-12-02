@@ -199,8 +199,10 @@ class ESMFProfileTrees(object):
         return esmf_region
 
     def _parse_line(self, line):
-        """Parses a line from an ESMF file."""
+        """Parses a line from an ESMF file based on summary flag."""
+        line = re.sub(r"(\d+)(\s+)(\d+\.\d+)", r"\1  \3", line)
         parts = re.split(r"\s{2,}", line.strip())
+
         if not self.esmf_summary:
             name = parts[0]
             count = int(parts[1])
