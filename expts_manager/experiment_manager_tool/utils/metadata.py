@@ -1,5 +1,5 @@
 import os
-from utils.ryaml_handler import read_yaml, write_yaml, LiteralString
+from experiment_manager_tool.utils.ryaml_handler import read_yaml, write_yaml, LiteralString
 
 class MetaData:
     def __init__(self, startfrom_str: str, force_restart: bool, base_path: str, branch_perturb: str, base_branch_name: str) -> None:

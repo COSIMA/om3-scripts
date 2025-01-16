@@ -1,6 +1,6 @@
 import os
-from utils.base_manager import BaseManager
-from mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
+from experiment_manager_tool.utils.base_manager import BaseManager
+from experiment_manager_tool.mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
 
 class MOM6Updater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
     def __init__(self, yamlfile: str) -> None:

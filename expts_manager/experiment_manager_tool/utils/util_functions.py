@@ -1,6 +1,6 @@
 import subprocess
 import os
-from utils import constants
+from experiment_manager_tool.utils import constants
 
 def update_diag_table(path: str, diag_path: str, diag_flag: bool, model: str) -> None:
     if diag_flag and diag_path:

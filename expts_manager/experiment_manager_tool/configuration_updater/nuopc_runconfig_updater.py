@@ -1,8 +1,8 @@
 import os
-from mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
-from configuration_updater.common import update_config_entries
-from utils.base_manager import BaseManager
-from utils.util_functions import get_namelist_group, create_nested_dict
+from experiment_manager_tool.mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
+from experiment_manager_tool.configuration_updater.common import update_config_entries
+from experiment_manager_tool.utils.base_manager import BaseManager
+from experiment_manager_tool.utils.util_functions import get_namelist_group, create_nested_dict
 
 class NuopcRunConfigUpdater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
     def __init__(self, yamlfile: str) -> None:

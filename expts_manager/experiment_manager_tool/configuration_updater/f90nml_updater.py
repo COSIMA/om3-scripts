@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import f90nml
-from utils import constants
-from utils.util_functions import get_namelist_group
+from experiment_manager_tool.utils import constants
+from experiment_manager_tool.utils.util_functions import get_namelist_group
 
 class f90nmlUpdater:
     def __init__(self):

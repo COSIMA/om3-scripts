@@ -3,8 +3,8 @@ import sys
 import warnings
 import shutil
 import subprocess
-from mixins.mixins import FullPathMixin
-from utils.base_manager import BaseManager
+from experiment_manager_tool.mixins.mixins import FullPathMixin
+from experiment_manager_tool.utils.base_manager import BaseManager
 
 class ExternalTools(BaseManager, FullPathMixin):
     def __init__(self, yamlfile: str) -> None:

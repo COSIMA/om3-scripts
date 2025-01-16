@@ -1,11 +1,11 @@
 import os
 import warnings
-from utils.ryaml_handler import read_yaml, write_yaml
-from configuration_updater.common import update_config_entries
+from experiment_manager_tool.utils.ryaml_handler import read_yaml, write_yaml
+from experiment_manager_tool.configuration_updater.common import update_config_entries
 
 class ConfigUpdater:
     @staticmethod
-    def update_config_params(expt_path: str, param_dict: dict, filename):
+    def update_config_params(expt_path: str, param_dict: dict, filename: str) -> None:
         """
         Updates namelist parameters and overwrites namelist file.
 
@@ -29,7 +29,7 @@ class ConfigUpdater:
         param_dict["jobname"] = expt_name
         update_config_entries(file_read, param_dict)
         write_yaml(file_read, nml_path)
-    
+
     @staticmethod
     def update_perturb_jobname(expt_path: str, expt_name: str) -> None:
         """

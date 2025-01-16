@@ -1,6 +1,6 @@
 import os
-from utils.ryaml_handler import read_yaml
-from utils import constants
+from experiment_manager_tool.utils.ryaml_handler import read_yaml
+from experiment_manager_tool.utils import constants
 
 class BaseManager:
     """

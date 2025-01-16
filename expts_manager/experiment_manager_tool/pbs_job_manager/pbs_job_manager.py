@@ -1,7 +1,7 @@
 import os
 import subprocess
 import glob
-from git_manager.git_manager import check_and_commit_changes
+from experiment_manager_tool.git_manager.git_manager import check_and_commit_changes
 
 class PBSJobManager:
     """

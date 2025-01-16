@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-
 import argparse
-import os
-from manager.experiment_manager import ExperimentManager
+from experiment_manager_tool.manager.experiment_manager import ExperimentManager
 
 def main():
     parser = argparse.ArgumentParser(

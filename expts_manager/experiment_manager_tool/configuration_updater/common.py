@@ -1,5 +1,5 @@
 
-def update_config_entries(base: dict, change: dict) -> dict:
+def update_config_entries(base: dict, change: dict) -> None:
     """
     Recursively update nuopc_runconfig and config.yaml entries.
     """
