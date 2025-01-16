@@ -1,12 +1,9 @@
 import os
 import numpy as np
 import f90nml
-from experiment_manager_tool.utils import constants
 from experiment_manager_tool.utils.util_functions import get_namelist_group
 
 class f90nmlUpdater:
-    def __init__(self):
-        self.combo_suffix = constants.COMBO_SUFFIX
 
     def update_nml_params(self, expt_path, param_dict, parameter_block, append_group_list: list =None, indx=None) -> None:
         """

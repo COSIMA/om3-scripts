@@ -1,8 +1,0 @@
-MOM_PREFIX = "MOM_list"
-CONFIG_PREFIX = "config_list"
-RUNCONFIG_SUFFIX1 = "_attributes"
-RUNCONFIG_SUFFIX2 = "_modelio"
-NML_SUFFIX = "_nml"
-RUNSEQ_PREFIX = "runseq_list"
-COMBO_SUFFIX = "_combo"
-BRANCH_PERTURB = "perturb"

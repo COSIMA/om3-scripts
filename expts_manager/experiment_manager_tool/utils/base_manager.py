@@ -1,6 +1,5 @@
 import os
 from experiment_manager_tool.utils.ryaml_handler import read_yaml
-from experiment_manager_tool.utils import constants
 
 class BaseManager:
     """
@@ -16,6 +15,5 @@ class BaseManager:
         self.dir_manager = os.getcwd()
         self.test_path = self.indata.get("test_path")
         self.model = self.indata.get("model")
-        
-        self.combo_suffix = constants.COMBO_SUFFIX
-        self.branch_perturb = constants.BRANCH_PERTURB
+
+        self.branch_perturb = "perturb"

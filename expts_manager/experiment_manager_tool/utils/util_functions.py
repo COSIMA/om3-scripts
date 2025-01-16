@@ -1,6 +1,5 @@
 import subprocess
 import os
-from experiment_manager_tool.utils import constants
 
 def update_diag_table(path: str, diag_path: str, diag_flag: bool, model: str) -> None:
     if diag_flag and diag_path:
@@ -24,9 +23,6 @@ def copy_diag_table(diag_path: str, path: str) -> None:
         
 def get_namelist_group(list_of_groupname: list[str], indx: int) -> str:
     nml_group = list_of_groupname[indx]
-    # rename the namlist by removing the suffix if the suffix with `_combo`
-    if nml_group.endswith(constants.COMBO_SUFFIX):
-        nml_group = nml_group[: -len(constants.COMBO_SUFFIX)]
     return nml_group
 
 def create_nested_dict(outer_key: str, inner_dict: dict[str, dict]) -> dict[str, dict]:

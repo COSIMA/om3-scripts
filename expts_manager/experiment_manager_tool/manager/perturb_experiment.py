@@ -106,9 +106,6 @@ class PerturbExperiment(ControlExperiment):
         for groupname, name_dict in filecontent.items():
             self.tmp_count += 1
 
-            if not groupname.endswith(self.combo_suffix):
-                continue
-
             if name_dict:
                 self._generate_combined_dicts(groupname, name_dict, filename)
                 self.setup_expts(filename)
