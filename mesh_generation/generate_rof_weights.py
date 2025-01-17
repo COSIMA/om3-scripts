@@ -114,8 +114,6 @@ def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
     # add global attributes
     weights_ds.attrs = {
         "gridType": "unstructured mesh",
-        "timeGenerated": f"{{str(datetime.now())[0:16]}}",
-        "created_by": f"{os.environ.get('USER')}",
         "inputFile": f"{mesh_filename} (md5 hash: {md5sum(mesh_filename)})",
     }
 
