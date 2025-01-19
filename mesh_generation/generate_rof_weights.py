@@ -3,7 +3,7 @@
 
 # =========================================================================================
 # Generate an remapping weights between two ESMF mesh files for remapping a runoff field
-# an unmasked mesh to a masked mesh without loosing any water volume. Each field on the
+# an unmasked mesh to a masked mesh without losing any water volume. Each field on the
 # unmasked mesh is mapped to the nearest ocean cell in the resulting weights.
 #
 # To run:
@@ -47,7 +47,7 @@ COMP_ENCODING = {"complevel": 1, "compression": "zlib"}  # compression settings 
 
 
 def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
-    # We need to generate remapping weights for use in the mediator, such that the overall volume of runoff is conserved and no run-off is mapped onto land cells. Inside the mediator, the grid doesn't change as we run the mediator with the ocean grid (the DROF component does the remapping from JRA grid to mediator grid). There we use the same _mesh_file for the input and output mesh, however this same routine would work for differeing input and output meshes
+    # We need to generate remapping weights for use in the mediator, such that the overall volume of runoff is conserved and no runoff is mapped onto land cells. Inside the mediator, the grid doesn't change as we run the mediator with the ocean grid (the DROF component does the remapping from JRA grid to mediator grid). There we use the same _mesh_file for the input and output mesh, however this same routine would work for differing input and output meshes
 
     model_mesh = esmpy.Mesh(
         filename=mesh_filename,
@@ -60,8 +60,8 @@ def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
 
     try:
         os.remove(TEMP_WEIGHTS_F)  # rm old temp file
-    except:
-        None
+    except OSError:
+        pass
 
     # Generate remapping weights and write to file.
     esmpy.Regrid(
