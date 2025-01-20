@@ -30,7 +30,8 @@
 
 import xarray as xr
 import esmpy
-from scipy.spatial import KDTree
+from sklearn.neighbors import BallTree
+from numpy import deg2rad
 from copy import copy
 
 from pathlib import Path
@@ -89,16 +90,20 @@ def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
         "int"
     )
 
-    # Make a KDTree from the ocean cells
-    mask_tree = KDTree(mod_mesh_ds.centerCoords.isel(elementCount=mask_i))
+    center_coords_rad = deg2rad(mod_mesh_ds.centerCoords)
 
-    # Using the KDTree, look up the nearest ocean cell to every destination grid cell in our weights file. Note our weights are indexed from 1 (i.e. Fortran style) but xarray starts from 0 (i.e. python style), so subract one from our destination grid cell indices.
-
-    dd, ii = mask_tree.query(
-        mod_mesh_ds.centerCoords.isel(elementCount=(weights_ds.row - 1)), workers=-1
+    # Make a BallTree from the ocean cells
+    mask_tree = BallTree(
+        center_coords_rad.isel(elementCount=mask_i), metric="haversine"
     )
 
-    new_row = mask_i[ii] + 1
+    # Using the Tree, look up the nearest ocean cell to every destination grid cell in our weights file. Note our weights are indexed from 1 (i.e. Fortran style) but xarray starts from 0 (i.e. python style), so subract one from our destination grid cell indices.
+
+    ii = mask_tree.query(
+        center_coords_rad.isel(elementCount=(weights_ds.row - 1)), return_distance=False
+    )
+
+    new_row = mask_i[ii[:, 0]] + 1
 
     # Get the mesh element areas and adjust:
     # n.b. per CMEPS we are using the internally calculated areas, not the user provided ones.
@@ -134,7 +139,7 @@ def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create an remapping weights to transfer runoff from the unmasked to masked cells in an ESMF mesh file."
+        description="Create an remapping weights to transfer runoff from unmasked mesh to masked mesh using ESMF mesh file."
     )
 
     parser.add_argument(
@@ -162,6 +167,8 @@ def main():
     global_attrs = {"history": get_provenance_metadata(this_file, runcmd)}
 
     drof_remapping_weights(mesh_filename, weights_filename, global_attrs)
+
+    return True
 
 
 if __name__ == "__main__":
