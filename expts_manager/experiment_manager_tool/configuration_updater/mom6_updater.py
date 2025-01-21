@@ -2,13 +2,14 @@ import os
 from experiment_manager_tool.utils.base_manager import BaseManager
 from experiment_manager_tool.mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
 
+
 class MOM6Updater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
     def __init__(self, yamlfile: str) -> None:
         super().__init__(yamlfile)
 
         # Load om3utils if required based on the model, e.g., "access-om3" from YAML input.
         self.load_om3utils_if_required(self.model)
-    
+
     def update_mom6_params(self, expt_path, param_dict_update, parameter_block):
         mom6_path = os.path.join(expt_path, parameter_block)
         MOM_inputParser = self._parser_mom6_input(mom6_path)
@@ -18,7 +19,7 @@ class MOM6Updater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
         MOM_inputParser.writefile_MOM_input(mom6_path)
 
     def override_mom6_params(self, expt_path, param_dict, commt_dict_change):
-        #raise NotImplementedError("This method must be implemented")
+        # raise NotImplementedError("This method must be implemented")
         """
         Updates MOM6 parameters in the 'MOM_override' file. 'or': override
 

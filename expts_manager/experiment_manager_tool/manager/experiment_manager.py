@@ -4,6 +4,7 @@ from experiment_manager_tool.manager.control_experiment import ControlExperiment
 from experiment_manager_tool.manager.perturb_experiment import PerturbExperiment
 from experiment_manager_tool.utils.base_manager import BaseManager
 
+
 class ExperimentManager(BaseManager):
     def __init__(self, yamlfile) -> None:
         super().__init__(yamlfile)

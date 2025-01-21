@@ -1,7 +1,11 @@
 import os
 import xml.etree.ElementTree as ET
 from typing import Optional, Dict, Any
-from experiment_manager_tool.utils.util_functions import get_namelist_group, create_nested_dict
+from experiment_manager_tool.utils.util_functions import (
+    get_namelist_group,
+    create_nested_dict,
+)
+
 
 class XMLUpdater:
     """
@@ -10,7 +14,14 @@ class XMLUpdater:
     """
 
     @staticmethod
-    def update_xml_elements(expt_path: str, param_dict: Dict[str, Any], parameter_block: str, append_group_list: list =None, indx: int =None, output_file: Optional[str] = None) -> None:
+    def update_xml_elements(
+        expt_path: str,
+        param_dict: Dict[str, Any],
+        parameter_block: str,
+        append_group_list: list = None,
+        indx: int = None,
+        output_file: Optional[str] = None,
+    ) -> None:
         """
         Recursive updates to XML elements based on a dictionary input and saves the changes.
 
@@ -35,7 +46,9 @@ class XMLUpdater:
             tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
     @staticmethod
-    def _update_xml_recursive(element: ET.Element, param_dict: Dict[str, Dict[str, Any]]) -> bool:
+    def _update_xml_recursive(
+        element: ET.Element, param_dict: Dict[str, Dict[str, Any]]
+    ) -> bool:
         """
         Recursively updates XML elements based on a dictionary input.
 
@@ -49,7 +62,7 @@ class XMLUpdater:
         updated = False
 
         # Get the tag name without namespace, e.g., "{sss}metadata"
-        e_tag = element.tag.split('}')[-1]
+        e_tag = element.tag.split("}")[-1]
 
         # <metadata> (no attributes)
         if e_tag == "metadata" and "metadata" in param_dict:
@@ -64,7 +77,7 @@ class XMLUpdater:
             stream_name = element.get("name")
             if stream_name in param_dict:
                 for child_name, new_value in param_dict[stream_name].items():
-                    child = element.find(child_name) 
+                    child = element.find(child_name)
                     if child is not None:
                         child.text = new_value
                         updated = True
@@ -75,14 +88,3 @@ class XMLUpdater:
                 updated = True
 
         return updated
-
-
-# param_dict = {
-#     "JRA55do.PRSN": {"taxmode": "constant", "readmode": "multiple"},
-#     "JRA55do.PRRN": {"taxmode": "aaa", "readmode": "sds"},
-#     "metadata": {"history": "Updated in 2026", "date_generated": "2025-01-21 26:1:00"}
-# }
-
-# update_xml_elements("/g/data/tm70/ml0072/COMMON/git_repos/COSIMA_om3-scripts/expts_manager/product1_0.25deg_new_topo_modify/epbl_1_om5_fix_runoff_rivermix_40/datm.streams.xml",
-#                     param_dict,
-#                     output_file="/g/data/tm70/ml0072/COMMON/git_repos/COSIMA_om3-scripts/expts_manager/product1_0.25deg_new_topo_modify/epbl_1_om5_fix_runoff_rivermix_40/datm.streams_tmp.xml")

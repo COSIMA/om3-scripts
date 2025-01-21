@@ -3,10 +3,13 @@ import os
 import git
 from typing import Optional
 
-def payu_clone_from_commit_hash(url: str, commit_hash: str, branch_name: str, path: str) -> None:
+
+def payu_clone_from_commit_hash(
+    url: str, commit_hash: str, branch_name: str, path: str
+) -> None:
     """
     Clones a configuration using a specific commit hash and git url.
-    
+
     Args:
         url (str): The url of the repo to clone.
         commit_hash (str): The commit hash to checkout.
@@ -17,16 +20,17 @@ def payu_clone_from_commit_hash(url: str, commit_hash: str, branch_name: str, pa
         RuntimeError: If the cloning process fails.
     """
     print(f"Cloning a configuration from {commit_hash} {url} to {path}")
-    
+
     # https://github.com/payu-org/payu/pull/515
     command = f"payu clone -b {branch_name} -s {commit_hash} {url} {path}"
-    
+
     try:
         subprocess.run(command, shell=True, check=True)
         print(f"-- Successfully cloned {os.path.relpath(path)}")
     except RuntimeError as e:
         print(f"Error during cloning: {e}")
         raise
+
 
 def check_and_commit_changes(path: str) -> None:
     """
@@ -37,7 +41,7 @@ def check_and_commit_changes(path: str) -> None:
     current_branch = repo.active_branch.name
     print(f"-- Current branch for the control experiment is: {current_branch}")
 
-    lock_file = os.path.join(repo.git_dir, 'index.lock')
+    lock_file = os.path.join(repo.git_dir, "index.lock")
     if os.path.exists(lock_file):
         os.remove(lock_file)
 
@@ -62,11 +66,13 @@ def check_and_commit_changes(path: str) -> None:
     else:
         print(f"-- Nothing changed, hence no further commits to {path}.")
 
+
 def _get_deleted_files(repo: git.Repo) -> Optional[list[str]]:
     """
     Gets deleted git files.
     """
     return [file.a_path for file in repo.index.diff(None) if file.change_type == "D"]
+
 
 def _get_changed_files(repo: git.Repo) -> Optional[list[str]]:
     """
@@ -74,11 +80,13 @@ def _get_changed_files(repo: git.Repo) -> Optional[list[str]]:
     """
     return [file.a_path for file in repo.index.diff(None) if file.change_type != "D"]
 
+
 def _get_untracked_files(repo: git.Repo) -> Optional[list[str]]:
     """
     Gets untracked git files.
     """
     return repo.untracked_files
+
 
 def _restore_swp_files(repo: git.Repo, staged_files: list[str]) -> None:
     """

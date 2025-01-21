@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 class FullPathMixin:
     def full_path(self, dir_name_key: str) -> str:
         """
@@ -9,6 +10,7 @@ class FullPathMixin:
         if dir_name_key not in self.indata:
             raise KeyError(f"{dir_name_key} not found in the input YAML file.")
         return os.path.join(self.dir_manager, self.test_path, self.indata[dir_name_key])
+
 
 class OM3UtilsLoaderMixin:
     _om3_message = False
@@ -24,6 +26,7 @@ class OM3UtilsLoaderMixin:
         try:
             from om3utils import MOM6InputParser
             from om3utils.nuopc_config import read_nuopc_config, write_nuopc_config
+
             self.read_nuopc_config = read_nuopc_config
             self.write_nuopc_config = write_nuopc_config
             self.MOM6InputParser = MOM6InputParser

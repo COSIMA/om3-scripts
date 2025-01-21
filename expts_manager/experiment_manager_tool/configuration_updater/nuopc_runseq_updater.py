@@ -1,6 +1,7 @@
 import re
 import os
 
+
 class NuopcRunSeqUpdater:
     @staticmethod
     def update_cpl_dt_nuopc_seq(seq_path, update_cpl_dt):
@@ -31,4 +32,6 @@ class NuopcRunSeqUpdater:
             param_dict (dict): The dictionary of parameters to update.
         """
         nuopc_runseq_file = os.path.join(expt_path, parameter_block)
-        NuopcRunSeqUpdater.update_cpl_dt_nuopc_seq(nuopc_runseq_file, param_dict[next(iter(param_dict.keys()))])
+        NuopcRunSeqUpdater.update_cpl_dt_nuopc_seq(
+            nuopc_runseq_file, param_dict[next(iter(param_dict.keys()))]
+        )

@@ -2,7 +2,11 @@ import os
 from experiment_manager_tool.mixins.mixins import FullPathMixin, OM3UtilsLoaderMixin
 from experiment_manager_tool.configuration_updater.common import update_config_entries
 from experiment_manager_tool.utils.base_manager import BaseManager
-from experiment_manager_tool.utils.util_functions import get_namelist_group, create_nested_dict
+from experiment_manager_tool.utils.util_functions import (
+    get_namelist_group,
+    create_nested_dict,
+)
+
 
 class NuopcRunConfigUpdater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
     def __init__(self, yamlfile: str) -> None:
@@ -11,7 +15,14 @@ class NuopcRunConfigUpdater(BaseManager, FullPathMixin, OM3UtilsLoaderMixin):
         # Load om3utils if required based on the model, e.g., "access-om3" from YAML input.
         self.load_om3utils_if_required(self.model)
 
-    def update_runconfig_params(self, expt_path: str, param_dict: dict, parameter_block: str, append_group_list: list =None, indx: int =None) -> None:
+    def update_runconfig_params(
+        self,
+        expt_path: str,
+        param_dict: dict,
+        parameter_block: str,
+        append_group_list: list = None,
+        indx: int = None,
+    ) -> None:
         """
         Updates namelist parameters and overwrites namelist file.
 

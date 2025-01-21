@@ -3,6 +3,7 @@ import warnings
 from experiment_manager_tool.utils.ryaml_handler import read_yaml, write_yaml
 from experiment_manager_tool.configuration_updater.common import update_config_entries
 
+
 class ConfigUpdater:
     @staticmethod
     def update_config_params(expt_path: str, param_dict: dict, filename: str) -> None:

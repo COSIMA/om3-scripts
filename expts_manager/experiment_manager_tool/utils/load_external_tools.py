@@ -6,6 +6,7 @@ import subprocess
 from experiment_manager_tool.mixins.mixins import FullPathMixin
 from experiment_manager_tool.utils.base_manager import BaseManager
 
+
 class ExternalTools(BaseManager, FullPathMixin):
     def __init__(self, yamlfile: str) -> None:
         super().__init__(yamlfile)
@@ -26,7 +27,9 @@ class ExternalTools(BaseManager, FullPathMixin):
 
         if self.model == "access-om3":
             if not all([utils_url, utils_dir_name, utils_branch_name]):
-                raise ValueError(f"Missing required parameters for cloning {self.model}")
+                raise ValueError(
+                    f"Missing required parameters for cloning {self.model}"
+                )
 
             self.utils_path = self.full_path("utils_dir_name")
             ExternalTools._clone_repo(
@@ -47,7 +50,7 @@ class ExternalTools(BaseManager, FullPathMixin):
     def update_diag_table(self) -> str:
         """
         Clones external tools if necessary.
-        
+
         Args:
             dir_manager (str)
         """
@@ -71,20 +74,28 @@ class ExternalTools(BaseManager, FullPathMixin):
         return diag_path
 
     @staticmethod
-    def _clone_repo(path: str, url: str, branch_name: str, tool_name: str, force_overwrite_tools: bool) -> None:
+    def _clone_repo(
+        path: str,
+        url: str,
+        branch_name: str,
+        tool_name: str,
+        force_overwrite_tools: bool,
+    ) -> None:
         if os.path.exists(path) and os.path.isdir(path):
             if force_overwrite_tools:
-                print(f"-- Force_overwrite_tools, hence removing existing {tool_name}: {path}")
+                print(
+                    f"-- Force_overwrite_tools, hence removing existing {tool_name}: {path}"
+                )
                 shutil.rmtree(path)
             else:
-                print(f"-- {tool_name} already exists at {path}, hence skipping cloning")
-                return 
+                print(
+                    f"-- {tool_name} already exists at {path}, hence skipping cloning"
+                )
+                return
         print(f"Cloning {tool_name} from {url} (branch: {branch_name})...")
 
         try:
-            command = (
-                f"git clone --branch {branch_name} {url} {path} --single-branch"
-            )
+            command = f"git clone --branch {branch_name} {url} {path} --single-branch"
             subprocess.run(command, shell=True, check=True)
             print(f"-- Successfully cloned {tool_name} to {path}.")
         except subprocess.CalledProcessError as e:

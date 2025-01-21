@@ -1,8 +1,20 @@
 import os
-from experiment_manager_tool.utils.ryaml_handler import read_yaml, write_yaml, LiteralString
+from experiment_manager_tool.utils.ryaml_handler import (
+    read_yaml,
+    write_yaml,
+    LiteralString,
+)
+
 
 class MetaData:
-    def __init__(self, startfrom_str: str, force_restart: bool, base_path: str, branch_perturb: str, base_branch_name: str) -> None:
+    def __init__(
+        self,
+        startfrom_str: str,
+        force_restart: bool,
+        base_path: str,
+        branch_perturb: str,
+        base_branch_name: str,
+    ) -> None:
         self.startfrom_str = startfrom_str
         self.force_restart = force_restart
         self.base_path = base_path
@@ -14,7 +26,7 @@ class MetaData:
         # symlink restart directories
         restartpath = self._generate_restart_symlink(expt_path)
         self._update_metadata_yaml_perturb(expt_path, param_dict, restartpath)
-        
+
     def _generate_restart_symlink(self, expt_path: str) -> str:
         """
         Generates a symlink to the restart directory if needed.
@@ -51,8 +63,10 @@ class MetaData:
             print(f"-- Restart symlink: {restartpath}")
 
         return restartpath
-    
-    def _update_metadata_yaml_perturb(self, expt_path: str, param_dict: dict, restartpath: str) -> None:
+
+    def _update_metadata_yaml_perturb(
+        self, expt_path: str, param_dict: dict, restartpath: str
+    ) -> None:
         """
         Updates the `metadata.yaml` file with relevant metadata.
 
@@ -77,7 +91,7 @@ class MetaData:
         self._remove_metadata_comments("keywords", metadata)
 
         write_yaml(metadata, metadata_path)  # write to file
-        
+
     def _remove_metadata_comments(self, key, metadata):
         """
         Removes comments after the key in metadata.
@@ -102,7 +116,7 @@ class MetaData:
         if tmp_string2.strip() not in desc.strip():
             desc += tmp_string2
         metadata["description"] = LiteralString(desc)
-        
+
     def _extract_metadata_keywords(self, param_change_dict):
         """
         Extracts keywords from parameter change dictionary.

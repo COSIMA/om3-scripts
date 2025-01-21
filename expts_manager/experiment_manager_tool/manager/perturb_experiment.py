@@ -9,8 +9,8 @@ from experiment_manager_tool.pbs_job_manager.pbs_job_manager import PBSJobManage
 
 
 class PerturbExperiment(ControlExperiment):
-    """
-    """
+    """ """
+
     def __init__(self, yamlfile: str) -> None:
         super().__init__(yamlfile)
 
@@ -22,8 +22,8 @@ class PerturbExperiment(ControlExperiment):
 
         # Parameter-related initialisation
         self.commt_dict_change = {}  # MOM6 comment
-        self.list_of_param_dict_change = [] # ALL parameter changes
-        self.list_of_groupname = [] # f90nml group names (not the actual parameters)
+        self.list_of_param_dict_change = []  # ALL parameter changes
+        self.list_of_groupname = []  # f90nml group names (not the actual parameters)
 
         # diag_table updates
         self.diag_pert = self.indata.get("diag_pert", False)
@@ -36,11 +36,19 @@ class PerturbExperiment(ControlExperiment):
         force_restart = self.indata.get("force_restart", False)
         self.startfrom = self.indata["startfrom"]
         startfrom_str = str(self.startfrom).strip().lower().zfill(3)
-        self.metadata = MetaData(startfrom_str, force_restart, self.base_path, self.branch_perturb, self.base_branch_name)
+        self.metadata = MetaData(
+            startfrom_str,
+            force_restart,
+            self.base_path,
+            self.branch_perturb,
+            self.base_branch_name,
+        )
 
         # PBS job manager and experiment runs
         nruns = self.indata.get("nruns", 0)
-        self.pbsjobmanager = PBSJobManager(self.dir_manager, self.check_duplicate_jobs, nruns)
+        self.pbsjobmanager = PBSJobManager(
+            self.dir_manager, self.check_duplicate_jobs, nruns
+        )
 
     def manage_perturb_expt(self) -> None:
         """
@@ -69,14 +77,16 @@ class PerturbExperiment(ControlExperiment):
                 continue
 
             self._process_namelist_block(blockname, blockcontents)
-            
-    def _process_namelist_block(self, blockname: str, blockcontents: dict[str, list|dict]) -> None:
+
+    def _process_namelist_block(
+        self, blockname: str, blockcontents: dict[str, list | dict]
+    ) -> None:
         """
         Process each parameter block in the namelist.
-        
+
         Args:
             blockname (str): Name of a parameter block, must starting with cross_block.
-            blockcontents (dict[str, list|dict]): The content of each parameter block. 
+            blockcontents (dict[str, list|dict]): The content of each parameter block.
         """
         expt_dir_name = self._user_defined_dirs(blockname)
         self.group_count = self._count_nested_groups(blockcontents, expt_dir_name)
@@ -87,7 +97,9 @@ class PerturbExperiment(ControlExperiment):
                 self.expt_names = params
                 self.num_expts = len(self.expt_names)
             elif isinstance(params, list):
-                raise ValueError("The experiment names may not be set properly or the YAML input contain invalid data.")
+                raise ValueError(
+                    "The experiment names may not be set properly or the YAML input contain invalid data."
+                )
             else:
                 self._process_params_cross_files(filename, params)
 
@@ -97,11 +109,11 @@ class PerturbExperiment(ControlExperiment):
     def _process_params_cross_files(self, filename: str, filecontent: dict) -> None:
         """
         Processes all parameter groups cross files.
-        
+
         Args:
             filename (str): The name of the file being processed.
             filecontent (dict): The content of the file, which includes groups and related name_dict,
-                                where name_dict is the value dict under each group name, in anther word, they are the actual parameters need to be tuned. 
+                                where name_dict is the value dict under each group name, in anther word, they are the actual parameters need to be tuned.
         """
         for groupname, name_dict in filecontent.items():
             self.tmp_count += 1
@@ -110,12 +122,16 @@ class PerturbExperiment(ControlExperiment):
                 self._generate_combined_dicts(groupname, name_dict, filename)
                 self.setup_expts(filename)
 
-    def _generate_combined_dicts(self, groupname: str, name_dict: dict, filename: str) -> None:
+    def _generate_combined_dicts(
+        self, groupname: str, name_dict: dict, filename: str
+    ) -> None:
         """
         Generates a list of dictionaries where each dictionary contains all keys with values from the same index for multiple experiments.
         """
         if filename.startswith("MOM_input"):
-            MOM_inputParser = self.mom6updater._parser_mom6_input(os.path.join(self.base_path, "MOM_input"))
+            MOM_inputParser = self.mom6updater._parser_mom6_input(
+                os.path.join(self.base_path, "MOM_input")
+            )
             commt_dict = MOM_inputParser.commt_dict
         else:
             commt_dict = None
@@ -126,12 +142,18 @@ class PerturbExperiment(ControlExperiment):
         for i in range(self.num_expts):
             name_dict = self._preprocess_nested_dicts(name_dict)
 
-            if any(len(v) != self.num_expts for v in name_dict.values() if isinstance(v, list)):
-                raise ValueError(f"The length of values in {list(name_dict.keys())} is inconsistent with the number of experiments.")
+            if any(
+                len(v) != self.num_expts
+                for v in name_dict.values()
+                if isinstance(v, list)
+            ):
+                raise ValueError(
+                    f"The length of values in {list(name_dict.keys())} is inconsistent with the number of experiments."
+                )
 
             param_dict_change = {}
             for k, v in name_dict.items():
-                if isinstance(v, list) and not isinstance(v[0], list): # flat list
+                if isinstance(v, list) and not isinstance(v[0], list):  # flat list
                     # Handle top-level lists like 'ncpus', 'mem', 'walltime', 'exe'...
                     param_dict_change[k] = v[i]
                 elif isinstance(v, list) and all(isinstance(item, list) for item in v):
@@ -147,7 +169,9 @@ class PerturbExperiment(ControlExperiment):
 
         if filename == "MOM_input":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif filename.endswith(("_in", ".nml", ".xml")) or filename in (("nuopc.runconfig", "nuopc.runseq")):
+        elif filename.endswith(("_in", ".nml", ".xml")) or filename in (
+            ("nuopc.runconfig", "nuopc.runseq")
+        ):
             self.list_of_groupname = list_of_groupname
 
     def _preprocess_nested_dicts(self, input_data: dict) -> dict:
@@ -157,13 +181,17 @@ class PerturbExperiment(ControlExperiment):
         res_dicts = {}
 
         for tmp_key, tmp_values in input_data.items():
-            if isinstance(tmp_values, list) and all(isinstance(v, dict) for v in tmp_values):
+            if isinstance(tmp_values, list) and all(
+                isinstance(v, dict) for v in tmp_values
+            ):
                 grouped_submodels = [[] for _ in range(self.num_expts)]
                 for submodel in tmp_values:
                     for i in range(self.num_expts):
                         tmp = {}
                         for k, v in submodel.items():
-                            if isinstance(v, list) and all(isinstance(item, list) for item in v):
+                            if isinstance(v, list) and all(
+                                isinstance(item, list) for item in v
+                            ):
                                 tmp[k] = [item[i] for item in v]
                             elif isinstance(v, list):
                                 tmp[k] = v[i]
@@ -216,11 +244,12 @@ class PerturbExperiment(ControlExperiment):
 
             if self.tmp_count == self.group_count:
                 # update diag_table if enabled
-                update_diag_table(expt_path,
-                                self.diag_path,
-                                self.diag_pert,
-                                self.model,
-                                )
+                update_diag_table(
+                    expt_path,
+                    self.diag_path,
+                    self.diag_pert,
+                    self.model,
+                )
 
                 # update metadata
                 self.metadata.update_medata(expt_path, param_dict)
@@ -231,18 +260,28 @@ class PerturbExperiment(ControlExperiment):
             # update params for each parameter block
             print(f"-- tunning parameters: {param_dict}")
             if filename == "MOM_input":
-                self.mom6updater.override_mom6_params(expt_path, param_dict, self.commt_dict_change)
+                self.mom6updater.override_mom6_params(
+                    expt_path, param_dict, self.commt_dict_change
+                )
             elif filename.endswith("_in") or filename.endswith(".nml"):
-                self.f90nmlupdater.update_nml_params(expt_path, param_dict, filename, self.list_of_groupname, i)
+                self.f90nmlupdater.update_nml_params(
+                    expt_path, param_dict, filename, self.list_of_groupname, i
+                )
             elif filename == "nuopc.runseq":
-                self.nuopcrunsequpdater.update_cpl_dt_params(expt_path, param_dict, filename)
+                self.nuopcrunsequpdater.update_cpl_dt_params(
+                    expt_path, param_dict, filename
+                )
             elif filename == "config.yaml":
                 self.configupdater.update_config_params(expt_path, param_dict, filename)
             elif filename == "nuopc.runconfig":
-                self.nuopcrunconfigupdater.update_runconfig_params(expt_path, param_dict, filename, self.list_of_groupname, i)
+                self.nuopcrunconfigupdater.update_runconfig_params(
+                    expt_path, param_dict, filename, self.list_of_groupname, i
+                )
             elif filename.endswith(".xml"):
                 print(f"{self.list_of_groupname}")
-                self.xmlupdater.update_xml_elements(expt_path, param_dict, filename, self.list_of_groupname, i)
+                self.xmlupdater.update_xml_elements(
+                    expt_path, param_dict, filename, self.list_of_groupname, i
+                )
 
             # run experiment jobs
             if self.tmp_count == self.group_count:
@@ -275,7 +314,7 @@ class PerturbExperiment(ControlExperiment):
         Resets user-defined perturbation experiment names.
         """
         self.expt_names = None
-        
+
     def _clone_expt_directory(self, expt_path: str) -> None:
         """
         Generates a new experiment directory by cloning the control experiment.

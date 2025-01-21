@@ -2,6 +2,7 @@
 import argparse
 from experiment_manager_tool.manager.experiment_manager import ExperimentManager
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="""
@@ -15,7 +16,7 @@ def main():
         type=str,
         nargs="?",
         default="Expts_manager.yaml",
-        help="YAML file specifying parameter values for experiment runs. Default is Expts_manager.yaml"
+        help="YAML file specifying parameter values for experiment runs. Default is Expts_manager.yaml",
     )
 
     args = parser.parse_args()

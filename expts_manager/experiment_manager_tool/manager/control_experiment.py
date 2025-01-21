@@ -2,8 +2,12 @@ import os
 from experiment_manager_tool.git_manager.git_manager import payu_clone_from_commit_hash
 from experiment_manager_tool.utils.util_functions import update_diag_table
 from experiment_manager_tool.configuration_updater.f90nml_updater import f90nmlUpdater
-from experiment_manager_tool.configuration_updater.nuopc_runconfig_updater import NuopcRunConfigUpdater
-from experiment_manager_tool.configuration_updater.nuopc_runseq_updater import NuopcRunSeqUpdater
+from experiment_manager_tool.configuration_updater.nuopc_runconfig_updater import (
+    NuopcRunConfigUpdater,
+)
+from experiment_manager_tool.configuration_updater.nuopc_runseq_updater import (
+    NuopcRunSeqUpdater,
+)
 from experiment_manager_tool.configuration_updater.config_updater import ConfigUpdater
 from experiment_manager_tool.configuration_updater.mom6_updater import MOM6Updater
 from experiment_manager_tool.configuration_updater.xml_updater import XMLUpdater
@@ -13,10 +17,11 @@ from experiment_manager_tool.utils.base_manager import BaseManager
 
 import xml
 
+
 class ControlExperiment(BaseManager, FullPathMixin):
     def __init__(self, yamlfile: str) -> None:
         super().__init__(yamlfile)
-        
+
         # YAML inputs for control experiment
         self.base_url = self.indata.get("base_url")
         self.base_commit = self.indata.get("base_commit")
@@ -26,7 +31,7 @@ class ControlExperiment(BaseManager, FullPathMixin):
         # diag_table updates
         self.diag_ctrl = self.indata.get("diag_ctrl", False)
         self.diag_path = self.full_path("diag_dir_name")
-        
+
         # configuration updaters
         self.f90nmlupdater = f90nmlUpdater()
         self.configupdater = ConfigUpdater()
@@ -38,14 +43,20 @@ class ControlExperiment(BaseManager, FullPathMixin):
         # PBS job manager and control runs
         self.check_duplicate_jobs = self.indata.get("check_duplicate_jobs", True)
         ctrl_nruns = self.indata.get("ctrl_nruns", 0)
-        self.pbsjobmanager = PBSJobManager(self.dir_manager, self.check_duplicate_jobs, ctrl_nruns)
+        self.pbsjobmanager = PBSJobManager(
+            self.dir_manager, self.check_duplicate_jobs, ctrl_nruns
+        )
 
     def manage_experiment(self) -> None:
         print(f"-- Setting up control experiment at {self.base_path}")
 
         if os.path.exists(self.base_path):
-            print(f"-- Control experiment {self.base_path} already exists, hence skipping cloning.")
-            print(f"   However, control experiment can still be updated based on the YAML inputs.")
+            print(
+                f"-- Control experiment {self.base_path} already exists, hence skipping cloning."
+            )
+            print(
+                f"   However, control experiment can still be updated based on the YAML inputs."
+            )
         else:
             payu_clone_from_commit_hash(
                 self.base_url,
@@ -55,11 +66,12 @@ class ControlExperiment(BaseManager, FullPathMixin):
             )
 
         # update diag_table if enabled
-        update_diag_table(self.base_path,
-                          self.diag_path,
-                          self.diag_ctrl,
-                          self.model,
-                          )
+        update_diag_table(
+            self.base_path,
+            self.diag_path,
+            self.diag_ctrl,
+            self.model,
+        )
 
         # setup control experiment
         self._setup_control_expt()
@@ -72,7 +84,7 @@ class ControlExperiment(BaseManager, FullPathMixin):
         Modifies parameters based on the input YAML configuration for the control experiment.
 
         Updates configuration files:
-            1. config.yaml, 
+            1. config.yaml,
             2. f90 namelist files (.in, .nml),
             3. nuopc.runconfig,
             4. MOM_input,
@@ -91,24 +103,36 @@ class ControlExperiment(BaseManager, FullPathMixin):
                 if yaml_data:
                     # Updates config entries from f90nml files
                     if target_file.endswith("_in") or target_file.endswith(".nml"):
-                        self.f90nmlupdater.update_nml_params(self.base_path, yaml_data, target_file)
+                        self.f90nmlupdater.update_nml_params(
+                            self.base_path, yaml_data, target_file
+                        )
 
                     # Updates config entries from `nuopc.runconfig`
                     if target_file == "nuopc.runconfig":
-                        self.nuopcrunconfigupdater.update_runconfig_params(self.base_path, yaml_data, target_file)
+                        self.nuopcrunconfigupdater.update_runconfig_params(
+                            self.base_path, yaml_data, target_file
+                        )
 
                     # Updates config entries from `config_yaml`
                     if target_file == "config.yaml":
-                        self.configupdater.update_config_params(self.base_path, yaml_data, target_file)
+                        self.configupdater.update_config_params(
+                            self.base_path, yaml_data, target_file
+                        )
 
                     # Updates config entries from `MOM_input`
                     if target_file == "MOM_input":
-                        self.mom6updater.update_mom6_params(self.base_path, yaml_data, target_file)
+                        self.mom6updater.update_mom6_params(
+                            self.base_path, yaml_data, target_file
+                        )
 
                     # Update only coupling timestep from `nuopc.runseq`
                     if target_file == "nuopc.runseq":
-                        self.nuopcrunsequpdater.update_cpl_dt_params(self.base_path, yaml_data, target_file)
+                        self.nuopcrunsequpdater.update_cpl_dt_params(
+                            self.base_path, yaml_data, target_file
+                        )
 
                     # Update only xml entries from .xml
                     if target_file.endswith(".xml"):
-                        self.xmlupdater.update_xml_elements(self.base_path, yaml_data, target_file)
+                        self.xmlupdater.update_xml_elements(
+                            self.base_path, yaml_data, target_file
+                        )

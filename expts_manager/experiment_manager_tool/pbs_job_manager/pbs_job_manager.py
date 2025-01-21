@@ -3,12 +3,16 @@ import subprocess
 import glob
 from experiment_manager_tool.git_manager.git_manager import check_and_commit_changes
 
+
 class PBSJobManager:
     """
     Manages PBS jobs by checking for existing jobs, handling duplicates,
     committing changes to the repo, and starting new experiment runs.
     """
-    def __init__(self, dir_manager: str, check_duplicate_jobs: bool, nruns: int) -> None:
+
+    def __init__(
+        self, dir_manager: str, check_duplicate_jobs: bool, nruns: int
+    ) -> None:
         self.dir_manager = dir_manager
         self.nruns = nruns
         self.check_duplicate_jobs = check_duplicate_jobs
@@ -40,10 +44,10 @@ class PBSJobManager:
         Retrieves and parses the current PBS job status using the `qstat -f` command.
 
         Returns:
-            dict: A dictionary containing PBS job information, where each key 
+            dict: A dictionary containing PBS job information, where each key
                   is a job ID, and the value is a dictionary of job attributes.
         """
-        current_job_status_path = os.path.join('.', "current_job_status")
+        current_job_status_path = os.path.join(".", "current_job_status")
         command = f"qstat -f > {current_job_status_path}"
         subprocess.run(command, shell=True, check=True)
 
@@ -94,7 +98,9 @@ class PBSJobManager:
         duplicated = False
 
         for job_id, job_info in pbs_jobs.items():
-            folder_path, parent_path = PBSJobManager._extract_current_and_parent_path(job_info["Error_Path"])
+            folder_path, parent_path = PBSJobManager._extract_current_and_parent_path(
+                job_info["Error_Path"]
+            )
             job_state = job_info["job_state"]
             if job_state not in ("F", "S"):
                 if parent_path not in parent_paths:
@@ -120,11 +126,13 @@ class PBSJobManager:
         """
         if duplicated:
             return
-        
+
         # clean `work` directory for failed jobs
         self._clean_workspace(path)
-        
-        doneruns = len(glob.glob(os.path.join(path, "archive", "output[0-9][0-9][0-9]*")))
+
+        doneruns = len(
+            glob.glob(os.path.join(path, "archive", "output[0-9][0-9][0-9]*"))
+        )
         newruns = self.nruns - doneruns
         if newruns > 0:
             print(f"\nStarting {newruns} new experiment runs\n")
@@ -132,7 +140,9 @@ class PBSJobManager:
             subprocess.run(command, shell=True, check=True)
             print("\n")
         else:
-            print(f"-- `{os.path.basename(path)}` already completed {doneruns} runs, hence no new runs.\n")
+            print(
+                f"-- `{os.path.basename(path)}` already completed {doneruns} runs, hence no new runs.\n"
+            )
 
     def _clean_workspace(self, path):
         """
