@@ -43,4 +43,8 @@ class ExperimentManager(BaseManager):
         self.control_experiment.manage_experiment()
 
         self.perturb_experiment = PerturbExperiment(self.yamlfile)
-        self.perturb_experiment.manage_perturb_expt()
+        if self.run_namelists:
+            print("==== Start perturbation experiments ====")
+            self.perturb_experiment.manage_perturb_expt()
+        else:
+            print("==== No perturbation experiments are prescribed ====")

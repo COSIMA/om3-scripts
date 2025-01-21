@@ -15,5 +15,6 @@ class BaseManager:
         self.dir_manager = os.getcwd()
         self.test_path = self.indata.get("test_path")
         self.model = self.indata.get("model")
+        self.run_namelists = self.indata.get("run_namelists", False)
 
         self.branch_perturb = "perturb"
