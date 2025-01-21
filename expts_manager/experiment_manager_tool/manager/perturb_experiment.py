@@ -23,13 +23,13 @@ class PerturbExperiment(ControlExperiment):
         # Parameter-related initialisation
         self.commt_dict_change = {}  # MOM6 comment
         self.list_of_param_dict_change = [] # ALL parameter changes
-        self.list_of_groupname = [] # f90nml parameter
+        self.list_of_groupname = [] # f90nml group names (not the actual parameters)
 
         # diag_table updates
         self.diag_pert = self.indata.get("diag_pert", False)
         self.diag_path = self.full_path("diag_dir_name")
 
-        # configuration updaters
+        # configuration updaters (MOM_override, hence needs to update mom6updater handler
         self.mom6updater = MOM6Updater(yamlfile)
 
         # metadata
@@ -147,7 +147,7 @@ class PerturbExperiment(ControlExperiment):
 
         if filename == "MOM_input":
             self.commt_dict_change = {k: commt_dict.get(k, "") for k in name_dict}
-        elif filename.endswith(("_in", ".nml")) or filename in (("config.yaml", "nuopc.runconfig", "nuopc.runseq")):
+        elif filename.endswith(("_in", ".nml", ".xml")) or filename in (("nuopc.runconfig", "nuopc.runseq")):
             self.list_of_groupname = list_of_groupname
 
     def _preprocess_nested_dicts(self, input_data: dict) -> dict:
@@ -240,7 +240,11 @@ class PerturbExperiment(ControlExperiment):
                 self.configupdater.update_config_params(expt_path, param_dict, filename)
             elif filename == "nuopc.runconfig":
                 self.nuopcrunconfigupdater.update_runconfig_params(expt_path, param_dict, filename, self.list_of_groupname, i)
+            elif filename.endswith(".xml"):
+                print(f"{self.list_of_groupname}")
+                self.xmlupdater.update_xml_elements(expt_path, param_dict, filename, self.list_of_groupname, i)
 
+            # run experiment jobs
             if self.tmp_count == self.group_count:
                 self.pbsjobmanager.pbs_job_runs(expt_path)
 
