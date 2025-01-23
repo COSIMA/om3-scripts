@@ -146,7 +146,7 @@ def main():
         "--mesh_filename",
         type=str,
         required=True,
-        help="The path to the mesh file specifying the model grid.",
+        help="The path to the mesh file specifying the model grid and land mask.",
     )
     parser.add_argument(
         "--weights_filename",
