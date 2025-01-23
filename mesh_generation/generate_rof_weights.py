@@ -90,7 +90,7 @@ def drof_remapping_weights(mesh_filename, weights_filename, global_attrs=None):
         "int"
     )
 
-    # Haversine distances expect latitude first, lat second, so index coordDim backwards
+    # Haversine distances expect lat first, lon second, so index coordDim backwards
     center_coords_rad = deg2rad(mod_mesh_ds.centerCoords.isel(coordDim=[1, 0]))
 
     # Make a BallTree from the ocean cells
