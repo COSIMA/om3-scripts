@@ -1,23 +1,25 @@
 import os
 import sys
 
+
 def detect_HPC() -> str:
     """
     Detects the current HPC system.
-    
+
     Returns:
         str: The detected HPC identifier (e.g., 'gadi', 'setonix')
     """
     try:
         nodename = os.uname().nodename
-        return nodename.split('.')[1].lower()
+        return nodename.split(".")[1].lower()
     except IndexError:
         raise RuntimeError("Failed to detect HPC system...")
+
 
 def load_payu() -> None:
     """
     Loads the PAYU managing tool.
-    
+
     - Detects the current HPC system.
     - Checks if PAYU is already loaded to prevent redundant restarts.
     - Loads the PAYU module and sets up the correct runtime environment.
@@ -37,7 +39,9 @@ def load_payu() -> None:
         if new_args:
             print(f"Overrided input yaml file: `{new_args}` located at {os.getcwd()}")
         else:
-            print(f"Default input yaml file: `Expts_manager.yaml` located at {os.getcwd()}")
+            print(
+                f"Default input yaml file: `Expts_manager.yaml` located at {os.getcwd()}"
+            )
 
         # Sets PAYU_ENV
         os.environ["PAYU_ENV"] = "loaded"
@@ -56,6 +60,7 @@ def load_payu() -> None:
         raise NotImplementedError("Payu support for Setonix is not yet implemented.")
     else:
         raise ValueError(f"Unsupported HPC system: {hpc_name}. Payu cannot be loaded.")
+
 
 # load PAYU
 load_payu()
