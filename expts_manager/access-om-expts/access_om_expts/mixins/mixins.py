@@ -10,6 +10,7 @@ import os
 import sys
 import importlib
 
+
 class FullPathMixin:
     """
     Mixin to construct full paths using `dir_manager`, `test_path`,
