@@ -67,12 +67,10 @@ for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
    if [ -f $output_f ]; then
       echo WARN: $output_f exists, skipping concatenation daily sea ice files
    elif [ -f $f ] && [ -f $end_day_file ] ; then
-
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
-
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
       fi
