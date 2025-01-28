@@ -40,6 +40,12 @@ while getopts ":hd:" option; do
    esac
 done
 
+# Assume no leap year by default
+declare -A DAYS_IN_MONTH=(
+    [01]=31 [02]=28 [03]=31 [04]=30 [05]=31 [06]=30
+    [07]=31 [08]=31 [09]=30 [10]=31 [11]=30 [12]=31
+)
+
 #If no directory option provided , then use latest
 if [ -z $out_dir ]; then 
     #latest output dir only
@@ -52,17 +58,21 @@ if ! command -v -- "ncrcat" > /dev/null 2>&1; then
 fi
 
 for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
+   # extract the year and month from existing files
+   year_month=$(echo "$f" | sed -E "s/.*\.([0-9]{4}-[0-9]{2})-[0-9]{2}\.nc/\1/")
+   year=$(echo "$year_month" | cut -d- -f1)
+   month=$(echo "$year_month" | cut -d- -f2)
 
-   # capture the largest day for each month
-   end_day=$(ls ${f/-01.nc/-??.nc} 2>/dev/null \
-                | sed -E 's/.*-([0-9]{2})\.nc/\1/' \
-                | sort -n \
-                | tail -1 \
-                )
+   # get expected end day, allowing 29 if present on Feburary
+   end_day=${DAYS_IN_MONTH[$month]}
+   if [[ $month == "02" ]] && [[ -f ${f/-01.nc/-29.nc} ]]; then
+      end_day=29
+   fi
+
+   # expected last day file
+   end_day_file=${f/-01.nc/-${end_day}.nc}
 
    output_f=${f/-01.nc/.nc} #remove day in date string
-
-   end_day_file=${f/-01.nc/-${end_day}.nc}
 
    if [ -f $output_f ]; then
       echo WARN: $output_f exists, skipping concatenation daily sea ice files
