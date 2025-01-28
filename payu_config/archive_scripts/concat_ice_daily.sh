@@ -52,16 +52,17 @@ if ! command -v -- "ncrcat" > /dev/null 2>&1; then
 fi
 
 for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
-   # extract the year and month from existing files
-   year_month=$(echo "$f" | sed -E "s/.*\.([0-9]{4}-[0-9]{2})-[0-9]{2}\.nc/\1/")
-   year=$(echo "$year_month" | cut -d- -f1)
-   month=$(echo "$year_month" | cut -d- -f2)
 
-   # calculate the expected end day for the given year and month
-   end_day=$(cal $month $year | awk "NF {end_day=\$NF}; END {print end_day}")
-   end_day_file=${f/-01.nc/-$end_day.nc}
+   # capture the largest day for each month
+   end_day=$(ls ${f/-01.nc/-??.nc} 2>/dev/null \
+                | sed -E 's/.*-([0-9]{2})\.nc/\1/' \
+                | sort -n \
+                | tail -1 \
+                )
 
    output_f=${f/-01.nc/.nc} #remove day in date string
+
+   end_day_file=${f/-01.nc/-${end_day}.nc}
 
    if [ -f $output_f ]; then
       echo WARN: $output_f exists, skipping concatenation daily sea ice files
@@ -71,7 +72,7 @@ for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
       echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
-      
+
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
       fi
