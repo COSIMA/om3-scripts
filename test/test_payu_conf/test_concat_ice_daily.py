@@ -21,9 +21,10 @@ def assert_f_not_exists(p):
         raise AssertionError("File exists and should not: %s" % str(p))
 
 
-def daily_files(dir_name, hist_base, ndays, tmp_path):
+def daily_files(dir_name, hist_base, ndays, tmp_path, ini_date="2010-01-01 12:00"):
     """
-    Make 365 days of fake data, and then write it into 365 files
+    Make `ndays` of fake data, starting at `ini_date`,
+    and then write to daily files.
 
     request = (path, ndays)
     e.g. request = ("archive/output000", "365")
@@ -43,7 +44,7 @@ def daily_files(dir_name, hist_base, ndays, tmp_path):
             "x",
             "y",
         ],  # there is a bug in nco that means time needs to be the first dimension!
-        coords={"time": pd.date_range("2010-01-01 12:00", freq="D", periods=ndays)},
+        coords={"time": pd.date_range(ini_date, freq="D", periods=ndays)},
     )
     ds = da.to_dataset(name="aice")
 
@@ -89,7 +90,6 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
 
     if not use_dir:  # default path
         run([run_str])
-        expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
     else:  # provide path
         run(
             [
@@ -98,14 +98,15 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
                 output_dir,
             ],
         )
-        expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
+
+    expected_months = pd.date_range("2010-01-01", freq="ME", periods=nmonths + 1)
 
     # valid output filenames
     monthly_paths = [
         f"{output_dir}/{hist_base}.{str(t)[0:7]}.nc" for t in expected_months
     ]
 
-    for p in monthly_paths[0:nmonths]:
+    for p in monthly_paths[nmonths]:
         assert_file_exists(p)
 
     for p in monthly_paths[nmonths]:
@@ -166,3 +167,41 @@ def test_no_override(hist_dir, ndays, hist_base, tmp_path):
 
     for p in monthly_paths:
         assert_file_exists(p)
+
+
+@pytest.mark.parametrize(
+    "year, ndays, nmonths, use_dir",
+    [
+        (2012, 366, 12, False),  # Leap year
+        (2013, 365, 12, True),  # No leap year
+    ],
+)
+def test_leap_year(year, ndays, nmonths, use_dir, hist_base, tmp_path):
+    """
+    Ensures correctly handles Feb 29 for the leap year and
+    Feb 28 for the no-leap year.
+    """
+    hist_dir = "Default"
+
+    daily_paths = daily_files(
+        hist_dir, hist_base, ndays, tmp_path, ini_date=f"{year}-01-01"
+    )
+
+    chdir(tmp_path)
+    output_dir = Path(daily_paths[0]).parents[0]
+
+    if not use_dir:
+        run([run_str])
+    else:
+        run([run_str, "-d", str(output_dir)])
+
+    expected_months = pd.date_range(f"{year}-01-01", freq="ME", periods=nmonths + 1)
+    monthly_paths = [
+        f"{output_dir}/{hist_base}.{str(t)[:7]}.nc" for t in expected_months
+    ]
+
+    for p in monthly_paths[:nmonths]:
+        assert_file_exists(p)
+
+    for p in daily_paths:
+        assert_f_not_exists(p)
