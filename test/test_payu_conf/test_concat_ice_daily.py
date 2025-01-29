@@ -106,7 +106,7 @@ def test_true_case(hist_dir, ndays, use_dir, nmonths, hist_base, tmp_path):
         f"{output_dir}/{hist_base}.{str(t)[0:7]}.nc" for t in expected_months
     ]
 
-    for p in monthly_paths[nmonths]:
+    for p in monthly_paths[:nmonths]:
         assert_file_exists(p)
 
     for p in monthly_paths[nmonths]:
