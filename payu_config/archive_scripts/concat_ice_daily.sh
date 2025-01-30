@@ -40,6 +40,12 @@ while getopts ":hd:" option; do
    esac
 done
 
+# Assume no leap year by default
+declare -A DAYS_IN_MONTH=(
+    [01]=31 [02]=28 [03]=31 [04]=30 [05]=31 [06]=30
+    [07]=31 [08]=31 [09]=30 [10]=31 [11]=30 [12]=31
+)
+
 #If no directory option provided , then use latest
 if [ -z $out_dir ]; then 
     #latest output dir only
@@ -57,21 +63,27 @@ for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
    year=$(echo "$year_month" | cut -d- -f1)
    month=$(echo "$year_month" | cut -d- -f2)
 
-   # calculate the expected end day for the given year and month
-   end_day=$(cal $month $year | awk "NF {end_day=\$NF}; END {print end_day}")
-   end_day_file=${f/-01.nc/-$end_day.nc}
+   # get expected end day, allowing 29 if present on Feburary
+   # if the month is Feb and a `-29.nc` file exists, allow 29 days
+   # we cannot use the year to determine leap years because RYF configurations
+   # don't follow a gregorian calendar. 
+   end_day=${DAYS_IN_MONTH[$month]}
+   if [[ $month == "02" ]] && [[ -f ${f/-01.nc/-29.nc} ]]; then
+      end_day=29
+   fi
+
+   # expected last day file
+   end_day_file=${f/-01.nc/-${end_day}.nc}
 
    output_f=${f/-01.nc/.nc} #remove day in date string
 
    if [ -f $output_f ]; then
       echo WARN: $output_f exists, skipping concatenation daily sea ice files
    elif [ -f $f ] && [ -f $end_day_file ] ; then
-
       #concat daily files for this month
       echo LOG: concatenating daily sea ice files in $out_dir
       echo doing ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
       ncrcat -O -L 5 -4 ${f/-01.nc/-??.nc} $output_f
-      
       if [[ $? == 0 ]]; then 
          rm ${f/-01.nc/-??.nc} #delete individual dailys on success
       fi
