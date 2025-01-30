@@ -66,7 +66,7 @@ for f in $out_dir/access-om3.cice*.????-??-01.nc ; do
    # get expected end day, allowing 29 if present on Feburary
    # if the month is Feb and a `-29.nc` file exists, allow 29 days
    # we cannot use the year to determine leap years because RYF configurations
-   # don't follow a standard calendar. 
+   # don't follow a gregorian calendar. 
    end_day=${DAYS_IN_MONTH[$month]}
    if [[ $month == "02" ]] && [[ -f ${f/-01.nc/-29.nc} ]]; then
       end_day=29
