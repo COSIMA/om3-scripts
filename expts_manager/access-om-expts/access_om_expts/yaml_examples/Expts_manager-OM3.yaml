@@ -1,0 +1,234 @@
+
+# =====================================================================================
+# access-om-expts: Experiment Manager Configuration
+# =====================================================================================
+# This YAML file defines parameters and settings for setting up, cloning, and executing 
+# control and perturbation experiments in ACCESS-OM2 and ACCESS-OM3.
+# It provides a structured way to manage configurations, including model selection, 
+# input files, job settings, and parameter tuning.
+# =====================================================================================
+
+
+# ============ Model Selection ========================================================
+
+model: access-om3  # Specify the model: access-om2 or access-om3
+
+# ============ om3-utils (only for access-om3) ========================================
+# The tool is necessary for:
+# 1. Parsing and modifying `MOM_input` parameters in MOM6.
+# 2. Reading and updating the `nuopc.runconfig` file.
+
+force_overwrite_tools: False
+utils_url: git@github.com:minghangli-uni/om3-utils.git  # Git repo URL
+utils_branch_name: main  # Branch to clone
+utils_dir_name: om3-utils  # Local directory name for cloning (user-defined)
+
+# ============ Diagnostic Table (optional) ============================================
+# Settings for customising `diag_table`.
+
+diag_url: git@github.com:minghangli-uni/make_diag_table.git  # Git repo URL
+diag_branch_name: general_scheme3  # Branch to clone
+diag_dir_name: make_diag_table  # Local directory name for cloning (user-defined)
+diag_ctrl: True  # For the control experiment
+diag_pert: True  # For perturbation experiments
+
+# ============ Control Experiment Setup ===============================================
+
+base_url: git@github.com:ACCESS-NRI/access-om3-configs.git  # Git repo for the experiment
+base_commit: "f37396e"  # Commit hash to use (string format)
+base_dir_name: Ctrl-025deg_jra55do_ryf  # Directory name for cloning (user-defined)
+test_path: example_om3 # Relative path for all test (control and perturbation) runs (user-defined)
+
+# ============ Control Experiment Variables ===========================================
+# Defines various settings and configurations for the control experiment, including:
+# - `config.yaml`: Common settings for both access-om2 and access-om3
+# - Namelists (`*.nml`, `*_in`): Model-specific configurations
+# - Coupling timestep (`nuopc.runseq`): access-om3 only
+# - Component settings (`nuopc.runconfig`): access-om3 only
+# - MOM6 configuration (`MOM_input`): access-om3 only
+# - Data component settings (`.xml`): access-om3 only
+# Below are some examples for the illustration purpose, please modify for your own settings.
+
+config.yaml:
+    ncpus: 240
+    mem: 960GB
+    walltime: 24:00:00
+    #jobname: # `jobname` will be forced to be the name of the directory, which is `Ctrl-025deg_jra55do_ryf` in this example.
+    metadata:
+        enable: True
+
+    runlog: True
+    restart_freq: 1
+
+    input:
+    - /g/data/vk83/configurations/inputs/access-om3/share/meshes/global.025deg/2024.03.26/access-om2-025deg-ESMFmesh.nc
+    - /g/data/vk83/configurations/inputs/access-om3/share/meshes/global.025deg/2024.03.26/access-om2-025deg-nomask-ESMFmesh.nc
+    - /g/data/vk83/configurations/inputs/access-om3/share/meshes/share/2024.09.16/JRA55do-datm-ESMFmesh.nc
+    - /g/data/vk83/configurations/inputs/access-om3/share/meshes/share/2024.09.16/JRA55do-drof-ESMFmesh.nc
+    - /g/data/vk83/configurations/inputs/access-om3/share/grids/global.025deg/2023.05.15/topog.nc
+    - /g/data/vk83/configurations/inputs/access-om3/mom/grids/mosaic/global.025deg/2020.05.30/ocean_hgrid.nc
+    - /g/data/vk83/configurations/inputs/access-om3/mom/grids/vertical/global.025deg/2024.04.04/ocean_vgrid.nc
+    - /g/data/vk83/configurations/inputs/access-om3/mom/initial_conditions/global.025deg/2020.10.22/ocean_temp_salt.res.nc
+    - /g/data/vk83/configurations/inputs/access-om3/mom/surface_salt_restoring/global.025deg/2020.05.30/salt_sfc_restore.nc
+    - /g/data/vk83/configurations/inputs/access-om3/cice/grids/global.025deg/2024.05.14/grid.nc
+    - /g/data/vk83/configurations/inputs/access-om3/cice/grids/global.025deg/2024.05.14/kmt.nc
+    - /g/data/vk83/configurations/inputs/JRA-55/RYF/v1-4/data
+
+    modules:
+        use:
+            - /g/data/vk83/modules
+        load:
+            - access-om3/2024.09.0
+            - nco/5.0.5
+
+nuopc.runseq:
+    cpl_dt: 1080.0 # Coupling timestep in the `nuopc_runseq`
+
+nuopc.runconfig:
+    CLOCK_attributes:
+        ocn_cpl_dt: 1080.0
+        stop_option: nyears
+        stop_n: 2
+
+MOM_input:
+    HFREEZE: 12
+    BOUND_SALINITY: False
+
+input.nml:
+    diag_manager_nml:
+        max_axes: 400
+        max_files: 200
+        max_num_axis_sets: 200
+
+drof.streams.xml:
+    JRA55do.FRIVER:
+        mapalgo: consd
+        tintalgo: lower
+    JRA55do.LICALVF:
+        mapalgo: consd
+        tintalgo: lower
+
+# ===================== Namelist Parameter Tuning =====================================
+# This section allows users to modify and tune parameters across different 
+# model components, enabling systematic perturbation experiments.
+
+# Generalised structure
+# namelists:
+#     Parameter_block_xxx:  (Required)  
+#         - The block name must begin with `Parameter_block` followed by a  
+#           unique identifier (`xxx`).  
+#         - Each `Parameter_block_xxx` defines a set of parameter changes  
+#           across different components.
+
+#         Parameter_block_xxx_dirs: (Required)  
+#             - A list of user-defined directory names where perturbation  
+#               experiments will be executed.  
+#             - The key must follow the format: `Parameter_block_xxx_dirs`.  
+
+#         filename: (Required)  
+#             - The filename must specify a single configuration file to be modified.  
+#             - Supported options include: `config.yaml`, `MOM_input`, `ice_in`,  
+#               `nuopc.runconfig`, `nuopc.runseq`, etc.  
+
+#             groupname: (Required)  
+#                 - For `f90` namelists and `nuopc.runconfig`, use the actual  
+#                   group name from the respective file.  
+#                 - For `MOM_input`, use `"MOM_dict"`.  
+#                 - For `nuopc.runseq`, use `"runseq_dict"`.  
+
+#                 parameter1:  (Required)  
+#                     - A list of values representing different perturbation settings.  
+#                     - Values can be numerical, boolean, or string-based.  
+#                     - Ensure that each list contains a value for every directory  
+#                       defined in `Parameter_block_xxx_dirs`.  
+#                 
+#                 parameter2:  
+#                     - Additional parameter variations can be defined here.  
+
+# ------------------- Important Notes -------------------------------------------
+# 1. The `namelists` key must appear only once in the YAML configuration file.  
+# 2. Multiple `Parameter_block_xxx` sections can be defined under `namelists`.  
+# 3. The number of values specified for each parameter must match the number  
+#    of directories listed in `Parameter_block_xxx_dirs`.  
+# 4. Parameters should be chosen carefully based on underlying model physics.  
+#    - Improper settings may lead to simulation failures or unrealistic results.
+
+# ------------------- Example Configurations ------------------------------------
+# Below are sample namelist configurations demonstrating the format and usage.
+
+namelists:
+    Parameter_block1:
+        Parameter_block1_dirs: [PB1_1, PB1_2]
+        config.yaml:
+            config_dict:
+                ncpus: [192, 144]
+                mem: [768GB, 576GB]
+
+        MOM_input:
+            MOM_dict:
+                DT_THERM: [3600.0, 7200.0]
+                DTBT_RESET_PERIOD: [3600.0, 7200.0]
+
+        ice_in:
+            shortwave_nml:
+                albicei: [0.36, 0.39]
+                albicev: [0.78, 0.81]
+
+            ponds_nml:
+                dpscale: [0.002, 0.003]
+
+        nuopc.runconfig:
+            CLOCK_attributes:
+                restart_n: [1, 1]
+                restart_option: [ndays, ndays]
+
+    Parameter_block2:
+        Parameter_block2_dirs: [PB2]
+        MOM_input:
+            MOM_dict:
+                DIABATIC_FIRST: [False]
+                THERMO_SPANS_COUPLING: [True]
+
+
+
+# ============ Control and perturbation experiment settings ===================================
+# This section defines the execution settings for both control experiments and 
+# perturbation tests. These settings determine how many runs are conducted, 
+# whether duplicate jobs are checked, and if restarts are enforced.
+
+ctrl_nruns: 0
+# Number of control experiment runs.            
+# Default: 0 (No runs).         
+# Adjust this value to run the control experiment multiple times.
+
+run_namelists: True  
+# Enables or disables the execution of perturbation experiments defined in the `namelists` section.  
+# Default: False (perturbation experiments are skipped).  
+# Set to `True` to apply parameter modifications specified in the `namelists` section.  
+
+check_duplicate_jobs: True  
+# Checks if there are duplicate PBS jobs within the same `test_path`.
+# Default: True (duplicate runs will be detected and skipped).
+# This is useful if some experiments are already running, ensuring new jobs  
+# do not conflict with existing ones.  
+# Note: 
+# - Duplicate checks only apply to jobs inside the same `test_path`.  
+# - If jobs are in different `test_path` directories, they will be allowed to run.  
+
+force_restart: False  
+# Controls whether to force a restart of the experiment, regardless of existing restart files.  
+# Default: False (experiments will resume from existing restart conditions).  
+# Set to `True` to enforce a restart for both control and perturbation runs.  
+
+
+startfrom: 'rest'  
+# Defines the initial condition for perturbation experiments.  
+# Options:  
+# - `'rest'`: Start from the default initial state.  
+# - A specific restart number from the control experiment.  
+
+nruns: 0
+# Defines the number of perturbation experiment runs to generate.  
+# Default: 0 (no perturbation runs).  
+# This determines how many times each perturbation experiment will be executed,  
+# based on the different parameter variations specified in the configuration.  
