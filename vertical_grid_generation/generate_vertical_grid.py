@@ -14,7 +14,7 @@
 #   - depfac: Tuning parameter for grid sharpness
 #
 # Example command to generate KDS75 grid or 025-degree OM3 vertical grid with 75 levels:
-# python script.py --H 6000 --dzd 200 --min_dz 1 --depfac 1.101
+# python generate_vertical_grid.py --H 6000 --dzd 200 --min_dz 1 --depfac 1.101
 #
 # Contact:
 #    Ezhilsabareesh Kannadasan <ezhilsabareesh.kannadasan@anu.edu.au>
