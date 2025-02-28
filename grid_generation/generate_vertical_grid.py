@@ -70,6 +70,7 @@ min_dz = args.min_dz
 depfac = args.depfac
 output_filename = args.output
 
+# Define a small constant to initialize the iteration and prevent numerical issues
 epsilon = 0.001
 
 
