@@ -1,10 +1,11 @@
-# Copyright 2023 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# Copyright 2025 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0
 
 # =========================================================================================
-# Generate a vertical grid for ocean models using a hyperbolic tangent function.
+# Generate a vertical grid for MOM using a hyperbolic tangent function.
 #
-# This script creates a regular vertical grid and writes it to a NetCDF file.
+# This script creates a vertical grid and writes it to a NetCDF file.
+# This script relates to the article "Stewart, K.D., Hogg, A.M., Griffies, S.M., Heerdegen, A.P., Ward, M.L., Spence, P. and England, M.H., 2017. Vertical resolution of baroclinic modes in global ocean models. Ocean Modelling, 113, pp.50-65."
 #
 # Usage:
 # Run the script with command-line arguments to specify:
@@ -113,7 +114,7 @@ eddyfile = nc.Dataset(output_filename, "w", format="NETCDF4")
 eddyfile.createDimension("nzv", len(real_prop_z))
 v_grid = eddyfile.createVariable("v_grid", "f8", ("nzv",))
 v_grid.units = "meters"
-v_grid.standard_name = "vertical_grid"
+v_grid.standard_name = "cell_thickness"
 v_grid.long_name = "vertical grid depth at top and bottom of each cell"
 eddyfile.variables["v_grid"][:] = real_prop_z
 eddyfile.setncatts({"history": get_provenance_metadata(this_file, runcmd)})
