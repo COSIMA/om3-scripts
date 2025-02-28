@@ -113,11 +113,11 @@ runcmd = (
 
 eddyfile = nc.Dataset(output_filename, "w", format="NETCDF4")
 eddyfile.createDimension("nzv", len(real_prop_z))
-v_grid = eddyfile.createVariable("v_grid", "f8", ("nzv",))
-v_grid.units = "meters"
-v_grid.standard_name = "cell_thickness"
-v_grid.long_name = "vertical grid depth at top and bottom of each cell"
-eddyfile.variables["v_grid"][:] = real_prop_z
+zeta = eddyfile.createVariable("zeta", "f8", ("nzv",))
+zeta.units = "meters"
+zeta.standard_name = "cell_thickness"
+zeta.long_name = "vertical grid depth at top and bottom of each cell"
+eddyfile.variables["zeta"][:] = real_prop_z
 eddyfile.setncatts({"history": get_provenance_metadata(this_file, runcmd)})
 eddyfile.close()
 
