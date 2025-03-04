@@ -50,8 +50,8 @@ def f_all(kk, H, depfac, dzd):
 
 def generate_vertical_grid(H, dzd, min_dz, depfac, output_filename):
 
-# Initialize the first two entries of the vertical grid with 0 and epsilon 
-# for both depth (z) and grid spacing (dz).
+    # Initialize the first two entries of the vertical grid with 0 and epsilon 
+    # for both depth (z) and grid spacing (dz).
     delta_z = [0, epsilon]
     prop_z = [0, epsilon]
 
