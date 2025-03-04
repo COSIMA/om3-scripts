@@ -55,8 +55,8 @@ def generate_vertical_grid(H, dzd, min_dz, depfac, output_filename):
     delta_z = [0, epsilon]
     prop_z = [0, epsilon]
 
-# Iteratively compute the next depth level by stepping from the current deepest 
-# point along the defined function to generate the vertical grid.
+    # Iteratively compute the next depth level by stepping from the current deepest 
+    # point along the defined function to generate the vertical grid.
 
     while prop_z[-1] + delta_z[-1] < 1.2 * H:
         aa = np.linspace(1.0, 1.5, 10000)
