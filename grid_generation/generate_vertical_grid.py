@@ -5,7 +5,9 @@
 # Generate a vertical grid for MOM using a hyperbolic tangent function.
 #
 # This script creates a vertical grid and writes it to a NetCDF file.
-# This script relates to the article "Stewart, K.D., Hogg, A.M., Griffies, S.M., Heerdegen, A.P., Ward, M.L., Spence, P. and England, M.H., 2017. Vertical resolution of baroclinic modes in global ocean models. Ocean Modelling, 113, pp.50-65."
+# This script relates to the article "Stewart, K.D., Hogg, A.M., Griffies, S.M., Heerdegen, A.P.,
+ Ward, M.L., Spence, P. and England, M.H., 2017. Vertical resolution of baroclinic modes in 
+ global ocean models. Ocean Modelling, 113, pp.50-65."
 #
 # Usage:
 # Run the script with command-line arguments to specify:
