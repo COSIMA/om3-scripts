@@ -110,16 +110,20 @@ def generate_vertical_grid(H, dzd, min_dz, depfac, output_filename):
         f"Output written to: {output_filename}"
     )
 
-
 def write_netcdf_file(output_filename, real_prop_z, this_file, runcmd):
     """Function to write vertical grid data to a NetCDF file."""
+    # Convert to float32 (single precision) to ensure values are exactly representable in single precision,
+    # then convert back to float64 (double precision) for storage in NetCDF.
+    real_prop_z_float32 = real_prop_z.astype(np.float32)
+    real_prop_z_float64 = real_prop_z_float32.astype(np.float64)
+
     eddyfile = nc.Dataset(output_filename, "w", format="NETCDF4")
     eddyfile.createDimension("nzv", len(real_prop_z))
     zeta = eddyfile.createVariable("zeta", "f8", ("nzv",))
     zeta.units = "meters"
     zeta.standard_name = "depth_below_geoid"
     zeta.long_name = "vertical grid depth at top and bottom of each cell"
-    eddyfile.variables["zeta"][:] = real_prop_z
+    eddyfile.variables["zeta"][:] = real_prop_z_float64
     eddyfile.setncatts({"history": get_provenance_metadata(this_file, runcmd)})
     eddyfile.close()
 
