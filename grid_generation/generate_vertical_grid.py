@@ -110,6 +110,7 @@ def generate_vertical_grid(H, dzd, min_dz, depfac, output_filename):
         f"Output written to: {output_filename}"
     )
 
+
 def write_netcdf_file(output_filename, real_prop_z, this_file, runcmd):
     """Function to write vertical grid data to a NetCDF file."""
     # Convert to float32 (single precision) to ensure values are exactly representable in single precision,
