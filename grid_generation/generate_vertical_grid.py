@@ -122,7 +122,7 @@ def write_netcdf_file(output_filename, real_prop_z, this_file, runcmd):
     eddyfile.createDimension("nzv", len(real_prop_z))
     zeta = eddyfile.createVariable("zeta", "f8", ("nzv",))
     zeta.units = "meters"
-    zeta.standard_name = "depth_below_geoid"
+    zeta.standard_name = "depth"
     zeta.long_name = "vertical grid depth at top and bottom of each cell"
     eddyfile.variables["zeta"][:] = real_prop_z_float64
     eddyfile.setncatts({"history": get_provenance_metadata(this_file, runcmd)})
