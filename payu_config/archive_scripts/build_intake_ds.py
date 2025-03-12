@@ -1,11 +1,11 @@
 #!python3
-# Copyright 2024 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
+# Copyright 2025 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0
 # modules:
 # use:
-#     - /g/data/hh5/public/modules
+#     - /g/data/xp65/public/modules
 # load:
-#     - conda/analysis
+#     - conda/analysis3-25.02
 
 from access_nri_intake.source import builders
 import os
