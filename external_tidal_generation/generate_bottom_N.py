@@ -2,16 +2,20 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # =========================================================================================
-# Generate a bottom-Xm-averaged stratification from WOA climatology.
+# Generate an N field (buoyancy frequency) from WOA climatology.
 #
 # This script creates a 3D stratification field from WOA temperature and salinity
 # data, computes the buoyancy frequency (N) on a mid-depth grid, and then averages N
 # over the bottom DEPTH_THRESHOLD meters of the water column for each (lat, lon) column.
 #
+# - If --depth-threshold > 0, compute a bottom-X meters average.
+# - If --depth-threshold == 0 (default), compute a full water-column (depth-averaged) mean.
+#
 # Usage:
-#    python3 generate_bottom_N.py --depth-threshold 500 \
-#         --temp-file /path/to/WOA_decav_t00_04.nc \
-#         --sal-file /path/to/WOA_decav_s00_04.nc \
+#    python3 generate_bottom_N.py \
+#         --temp-file /path/to/woa_decav_t00_04.nc \
+#         --sal-file /path/to/woa_decav_s00_04.nc \
+#         [--depth-threshold 500.0] \
 #         --output Nbot_freq.nc
 #
 # Contact:
@@ -30,7 +34,6 @@ import sys
 import argparse
 import os
 import warnings
-
 warnings.filterwarnings("ignore")
 
 import xarray as xr
@@ -54,7 +57,7 @@ def load_woa_data(temp_file: str, sal_file: str) -> (xr.DataArray, xr.DataArray)
     return sea_water_temp, sea_water_sal
 
 
-def compute_pressure(depth: xr.DataArray, lat: xr.DataArray, lon: xr.DataArray):
+def compute_pressure(depth: xr.DataArray, lat: xr.DataArray, lon: xr.DataArray) -> xr.DataArray:
     """
     Compute a 3D pressure field (in dbar) from 1D depth and lat arrays.
     gsw.p_from_z expects negative depth.
@@ -76,7 +79,6 @@ def compute_stratification(
     sea_water_temp: xr.DataArray,
     sea_water_sal: xr.DataArray,
     pressure_3d: xr.DataArray,
-    depth: xr.DataArray,
     lat: xr.DataArray,
 ) -> (xr.DataArray, xr.DataArray):
     """
@@ -105,26 +107,32 @@ def compute_bottom_average(
     depth_mid: xr.DataArray,
     sea_water_temp: xr.DataArray,
     depth: xr.DataArray,
-    depth_threshold: float,
+    depth_threshold: float = 0.0,
 ) -> xr.DataArray:
     """
-    Create a mask for the bottom depth_threshold meters, apply it to N_3D and average over depth_mid.
+    Compute either a bottom-X meters average if depth_threshold>0,
+    or a full-column (depth-averaged) mean if depth_threshold==0.
     """
-    # Broadcast depth
-    depth_array = sea_water_temp * 0 + depth
-    max_depth = depth_array.max(dim="depth", skipna=True)
-    bottom_threshold = max_depth - depth_threshold
+    if depth_threshold > 0:
+        # Broadcast depth
+        depth_array = sea_water_temp * 0 + depth
+        max_depth = depth_array.max(dim="depth", skipna=True)
+        bottom_threshold = max_depth - depth_threshold
 
-    # Create a mask
-    mask_bottom = xr.where(
-        (depth_mid >= bottom_threshold) & (depth_mid < max_depth),
-        1,
-        np.nan,
-    )
-    N_3D_bottom = N_3D * mask_bottom
+        # Create a mask
+        mask_bottom = xr.where(
+            (depth_mid >= bottom_threshold) & (depth_mid < max_depth),
+            1,
+            np.nan,
+        )
+        N_3D_bottom = N_3D * mask_bottom
 
-    # average depth_mid
-    N_3D_ave = N_3D_bottom.mean(dim="depth_mid", skipna=True) / (2 * np.pi)
+        # average depth_mid
+        N_3D_ave = N_3D_bottom.mean(dim="depth_mid", skipna=True) / (2 * np.pi)
+    else:
+        # full depth average
+        N_3D_ave = N_3D.mean(dim="depth_mid", skipna=True) / (2 * np.pi)
+
     return N_3D_ave
 
 
@@ -168,7 +176,7 @@ def main():
     parser.add_argument(
         "--depth-threshold",
         type=float,
-        default=500,
+        default=0.0,
         help="Bottom threshold in meters over which to average (default: 500).",
     )
     parser.add_argument(
@@ -202,10 +210,10 @@ def main():
 
     # Compute Stratification
     N_3D, depth_mid = compute_stratification(
-        sea_water_temp, sea_water_sal, pressure_3d, depth, lat
+        sea_water_temp, sea_water_sal, pressure_3d, lat
     )
 
-    # Compute bottom average of N over the bottom DEPTH_THRESHOLD meters
+    # Compute average N (bottom-X or full column)
     N_3D_ave = compute_bottom_average(
         N_3D, depth_mid, sea_water_temp, depth, args.depth_threshold
     )
