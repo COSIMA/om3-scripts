@@ -34,6 +34,7 @@ import sys
 import argparse
 import os
 import warnings
+
 warnings.filterwarnings("ignore")
 
 import xarray as xr
@@ -57,7 +58,9 @@ def load_woa_data(temp_file: str, sal_file: str) -> (xr.DataArray, xr.DataArray)
     return sea_water_temp, sea_water_sal
 
 
-def compute_pressure(depth: xr.DataArray, lat: xr.DataArray, lon: xr.DataArray) -> xr.DataArray:
+def compute_pressure(
+    depth: xr.DataArray, lat: xr.DataArray, lon: xr.DataArray
+) -> xr.DataArray:
     """
     Compute a 3D pressure field (in dbar) from 1D depth and lat arrays.
     gsw.p_from_z expects negative depth.
@@ -232,6 +235,14 @@ def main():
     )
 
     global_attrs = {"history": get_provenance_metadata(this_file, runcmd)}
+
+    # add md5 hashes for input files
+    file_hashes = [
+        f"{args.temp_file} (md5 hash: {md5sum(args.temp_file)})",
+        f"{args.sal_file} (md5 hash: {md5sum(args.sal_file)})",
+    ]
+    global_attrs["inputFile"] = ", ".join(file_hashes)
+
     Nbot_data.attrs.update(global_attrs)
 
     # Write output to a NetCDF file.
