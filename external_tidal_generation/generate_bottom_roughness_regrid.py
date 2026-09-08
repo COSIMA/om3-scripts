@@ -336,8 +336,8 @@ def main():
     parser.add_argument(
         "--woa_intermediate_file",
         type=str,
-        default=None,
-        help="Intermediate output file including lambda1, mean_depth, depth_var on WOA grid.",
+        required=True,
+        help="Intermediate input file including lambda1, mean_depth, depth_var on WOA grid.",
     )
     parser.add_argument(
         "--method",
