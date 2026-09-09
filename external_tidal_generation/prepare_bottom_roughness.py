@@ -17,8 +17,9 @@ from netCDF4 import Dataset
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts_common import get_provenance_input_files
 
-
-GENERATOR = Path(__file__).resolve().parent / "generate_bottom_roughness_intermediate_woa.py"
+GENERATOR = (
+    Path(__file__).resolve().parent / "generate_bottom_roughness_intermediate_woa.py"
+)
 
 
 def provenance(inputs):
@@ -80,16 +81,12 @@ def main():
     parser.add_argument("--woa-temp-file", type=Path, required=True)
     parser.add_argument("--woa-salt-file", type=Path, required=True)
     parser.add_argument("--synbath-file", type=Path, required=True)
-    parser.add_argument(
-        "--output",
-        type=Path,
-        required=True
-        )
+    parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
         "--check",
         action="store_true",
         help="Return 0 when current and 1 when generation is needed",
-        )
+    )
     args = parser.parse_args()
 
     inputs = [
@@ -109,6 +106,7 @@ def main():
 
     generate(output, inputs, expected)
     return 0
+
 
 if __name__ == "__main__":
     try:
