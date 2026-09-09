@@ -82,11 +82,6 @@ def main():
     parser.add_argument("--woa-salt-file", type=Path, required=True)
     parser.add_argument("--synbath-file", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Return 0 when current and 1 when generation is needed",
-    )
     args = parser.parse_args()
 
     inputs = [
@@ -100,19 +95,10 @@ def main():
     if is_current(output, expected):
         print(f"Reusing {output}")
         return 0
-    if args.check:
-        print(f"Intermediate needs generation: {output}")
-        return 1
 
     generate(output, inputs, expected)
     return 0
 
 
 if __name__ == "__main__":
-    try:
-        status = main()
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        status = 2
-
-    sys.exit(status)
+    main()
