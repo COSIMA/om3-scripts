@@ -18,13 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts_common import get_provenance_input_files
 
 
-SCRIPT_PATH = Path(__file__).resolve().parent
-GENERATOR = SCRIPT_PATH / "generate_bottom_roughness_intermediate_woa.py"
-INPUTS = [
-    Path("/g/data/av17/access-nri/OM3/woa23/annual_files/corrected_times/woa23_decav_t00_04.nc"),
-    Path("/g/data/av17/access-nri/OM3/woa23/annual_files/corrected_times/woa23_decav_s00_04.nc"),
-    Path("/g/data/av17/access-nri/OM3/SYNBATH/SYNBATH_V1.2.nc"),
-]
+GENERATOR = Path(__file__).resolve().parent / "generate_bottom_roughness_intermediate_woa.py"
 
 
 def provenance():
@@ -83,6 +77,9 @@ def generate(output, expected):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--woa-temp-file", type=Path, required=True)
+    parser.add_argument("--woa-salt-file", type=Path, required=True)
+    parser.add_argument("--synbath-file", type=Path, required=True)
     parser.add_argument(
         "--output",
         type=Path,
@@ -94,6 +91,12 @@ def main():
         help="Return 0 when current and 1 when generation is needed",
         )
     args = parser.parse_args()
+
+    inputs = [
+        args.woa_temp_file.expanduser().resolve(),
+        args.woa_salt_file.expanduser().resolve(),
+        args.synbath_file.expanduser().resolve(),
+    ]
 
     output = args.output.expanduser().resolve()
     expected = provenance()
@@ -108,4 +111,10 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    main()
+    try:
+        status = main()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        status = 2
+
+    sys.exit(status)
