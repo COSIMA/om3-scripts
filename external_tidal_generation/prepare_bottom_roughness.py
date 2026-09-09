@@ -21,11 +21,11 @@ from scripts_common import get_provenance_input_files
 GENERATOR = Path(__file__).resolve().parent / "generate_bottom_roughness_intermediate_woa.py"
 
 
-def provenance():
+def provenance(inputs):
     """
     Recreate the inputfile attribute written by get_provenance_metadata.
     """
-    return get_provenance_input_files([str(path) for path in INPUTS])
+    return get_provenance_input_files([str(path) for path in inputs])
 
 
 def is_current(output, expected):
@@ -35,7 +35,7 @@ def is_current(output, expected):
         return dataset.getncattr("inputFile") == expected
 
 
-def generate(output, expected):
+def generate(output, inputs, expected):
     """
     Run the MPI calculation inside PBS, publishing only a complete result.
     """
@@ -54,11 +54,11 @@ def generate(output, expected):
                 sys.executable,
                 str(GENERATOR),
                 "--woa_temp_file",
-                str(INPUTS[0]),
+                str(inputs[0]),
                 "--woa_salt_file",
-                str(INPUTS[1]),
+                str(inputs[1]),
                 "--synbath_file",
-                str(INPUTS[2]),
+                str(inputs[2]),
                 "--woa_intermediate_file",
                 str(temporary),
             ],
@@ -67,7 +67,7 @@ def generate(output, expected):
 
         with Dataset(temporary) as dataset:
             generated = dataset.getncattr("inputFile")
-        if generated != expected or provenance() != expected:
+        if generated != expected or provenance(inputs) != expected:
             raise RuntimeError("An input changed during generation; output not updated")
 
         os.replace(temporary, output)
@@ -99,7 +99,7 @@ def main():
     ]
 
     output = args.output.expanduser().resolve()
-    expected = provenance()
+    expected = provenance(inputs)
     if is_current(output, expected):
         print(f"Reusing {output}")
         return 0
@@ -107,7 +107,7 @@ def main():
         print(f"Intermediate needs generation: {output}")
         return 1
 
-    generate(output, expected)
+    generate(output, inputs, expected)
     return 0
 
 if __name__ == "__main__":
