@@ -57,8 +57,11 @@
 # Since this script normally only needs to run when its WOA/SYNBATH inputs change,
 # we prioritise code clarity and maintainability over performance optimisations.
 #
-# For input-metadata checks and PBS submission, use prepare_bottom_roughness.py.
-# Regridding is a separate invocation of generate_bottom_roughness_regrid.py.
+# This is an internal implementation script and is not intended to be the normal user entry point.
+# Use `prepare_bottom_roughness.py` to prepare the shared intermediate file. That script checks
+# the input provenance and invokes this MPI calculation only when regeneration is required.
+#
+# Regridding to a target MOM6 grid is a separate step performed with `generate_bottom_roughness_regrid.py`.
 #
 # Notes:
 # - The implementation follows the matlab reference workflow provided by Callum Shakespeare
@@ -77,7 +80,7 @@
 #
 # Modules:
 #   module use /g/data/xp65/public/modules
-#   module load conda/analysis3-25.05
+#   module load conda/analysis3
 #   module load openmpi/4.1.7
 #   module load git
 # =========================================================================================

@@ -2,9 +2,19 @@
 # Copyright 2026 ACCESS-NRI and contributors.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Check or generate the shared intermediate bottom roughness.
+# Prepare the shared WOA / SYNBATH bottom roughness intermediate.
 #
-
+# The intermediate bottom roughness depends on the WOA temperature and salinity, and SYNBATH bathymetry.
+# It is independent of the model grid.
+#
+# This script checks the provenance stored in an existing intermediate file and reuses it when the inputs
+# are unchanged. If the intermediate is missing or out of date, it runs `generate_bottom_roughness_intermediate_woa.py`
+# with MPI and only publishes the new file afer generation and provenance checks.
+#
+# This script must be run inside a PBS job. It uses PBS_NCPUS as the MPI rank count and it does not submit a job itself.
+#
+# After the shared intermediate has been prepared, run `generate_bottom_roughness_regrid.py` separately for each target MOM6 grid.
+# =========================================================================================
 import argparse
 import os
 from pathlib import Path
@@ -77,7 +87,9 @@ def generate(output, inputs, expected):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description="Prepare the shared WOA / SYNBATH bottom roughness intermediate file."
+    )
     parser.add_argument("--woa-temp-file", type=Path, required=True)
     parser.add_argument("--woa-salt-file", type=Path, required=True)
     parser.add_argument("--synbath-file", type=Path, required=True)
