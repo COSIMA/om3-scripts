@@ -51,6 +51,10 @@ def generate(output, inputs, expected):
     Run the MPI calculation inside PBS, publishing only a complete result.
     """
     ncpus = os.environ.get("PBS_NCPUS")
+    if ncpus is None:
+        raise RuntimeError(
+            "PBS_NCPUS is not set; this script must be run inside a PBS job."
+        )
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
