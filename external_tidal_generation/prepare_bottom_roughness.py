@@ -14,6 +14,8 @@
 # This script must be run inside a PBS job. It uses PBS_NCPUS as the MPI rank count and it does not submit a job itself.
 #
 # After the shared intermediate has been prepared, run `generate_bottom_roughness_regrid.py` separately for each target MOM6 grid.
+#
+# After review, publish the entire directory through model-config-tests.
 # =========================================================================================
 import argparse
 import os
@@ -57,35 +59,29 @@ def generate(output, inputs, expected):
         )
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(
-        prefix=".bottom-roughness-", dir=output.parent
-    ) as directory:
-        temporary = Path(directory) / output.name
-        subprocess.run(
-            [
-                "mpirun",
-                "-n",
-                ncpus,
-                sys.executable,
-                str(GENERATOR),
-                "--woa_temp_file",
-                str(inputs[0]),
-                "--woa_salt_file",
-                str(inputs[1]),
-                "--synbath_file",
-                str(inputs[2]),
-                "--woa_intermediate_file",
-                str(temporary),
-            ],
-            check=True,
-        )
+    subprocess.run(
+        [
+            "mpirun",
+            "-n",
+            ncpus,
+            sys.executable,
+            str(GENERATOR),
+            "--woa_temp_file",
+            str(inputs[0]),
+            "--woa_salt_file",
+            str(inputs[1]),
+            "--synbath_file",
+            str(inputs[2]),
+            "--woa_intermediate_file",
+            str(output),
+        ],
+        check=True,
+    )
 
-        with Dataset(temporary) as dataset:
-            generated = dataset.getncattr("inputFile")
-        if generated != expected or provenance(inputs) != expected:
-            raise RuntimeError("An input changed during generation; output not updated")
-
-        os.replace(temporary, output)
+    with Dataset(output) as dataset:
+        generated = dataset.getncattr("inputFile")
+    if generated != expected or provenance(inputs) != expected:
+        raise RuntimeError("An input changed during generation; output not updated")
 
     print(f"Updated {output}")
 
@@ -98,6 +94,12 @@ def main():
     parser.add_argument("--woa-salt-file", type=Path, required=True)
     parser.add_argument("--synbath-file", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Only check the intermediate is current; never create or replace it.",
+    )
+
     args = parser.parse_args()
 
     inputs = [
@@ -109,12 +111,14 @@ def main():
     output = args.output.expanduser().resolve()
     expected = provenance(inputs)
     if is_current(output, expected):
-        print(f"Reusing {output}")
         return 0
+
+    if args.check:
+        return 1
 
     generate(output, inputs, expected)
     return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
