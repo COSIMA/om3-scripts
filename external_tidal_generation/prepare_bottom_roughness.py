@@ -15,7 +15,7 @@
 #
 # After the shared intermediate has been prepared, run `generate_bottom_roughness_regrid.py` separately for each target MOM6 grid.
 #
-# After review, publish the entire directory through model-config-tests.
+# After review, publish the intermediate bottom roughness file and its associated README with provenance info through model-config-tests.
 # =========================================================================================
 import argparse
 import os
