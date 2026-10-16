@@ -44,7 +44,8 @@ sys.path.append(str(path_root))
 from scripts_common import get_provenance_metadata
 
 # these lat, lon pairs represent where high volumes on runoff enter the ocean
-# they represent where maximum flow in JRA55do > 0.15 kg/m^2/s
+# they represent where maximum flow in JRA55do > 0.15 kg/m^2/s, plus rivers whose mouths are
+# land in the 8km mask and would otherwise be moved to a single ocean cell
 SPREAD_POINTS = [
     (-0.125, 310.625),  # Amazon
     (8.625, 299.375),  # Tigre
@@ -52,6 +53,9 @@ SPREAD_POINTS = [
     (71.875, 82.875),  # Yenisey
     (72.125, 128.875),  # Lena
     (73.375, 106.625),  # Khatanga
+    (66.375, 70.625),  # Ob
+    (68.125, 54.125),  # Pechora
+    (67.125, 264.625),  # Back (Chantrey Inlet)
 ]
 
 # Buffer (degrees) around spread_points to spread from
