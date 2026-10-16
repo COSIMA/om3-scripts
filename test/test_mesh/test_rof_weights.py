@@ -9,8 +9,8 @@ from matplotlib import pyplot as plt
 
 import xarray as xr
 import numpy as np
-import regionmask
 import esmpy
+import regionmask
 from scipy.ndimage import binary_dilation
 from copy import copy
 

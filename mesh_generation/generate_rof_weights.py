@@ -1,30 +1,26 @@
-# Copyright 2025 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for
-# details.
+# Copyright 2025 ACCESS-NRI and contributors. See the top-level COPYRIGHT file for details.
 # SPDX-License-Identifier: Apache-2.0
 
 # =========================================================================================
 # Generate remapping weights from an ESMF mesh file for remapping a runoff field
-# from an unmasked mesh to a masked mesh without losing any water volume. Each field
-# is mapped to
-# - nearby ocean cells, with weights generated with exponential decay if source cell
-# is near a large volume river, otherwise
+# from an unmasked mesh to a masked mesh without losing any water volume. Each field is mapped to
+# - nearby ocean cells, with weights generated with exponential decay if source cell is near a large
+# volume river, otherwise
 # - the nearest ocean cell.
 #
 # To run:
-#   python generate_rof_weights.py --mesh_filename=<input_file>
-#     --weights_filename=<output_file>
+#   python generate_rof_weights.py --mesh_filename=<input_file> --weights_filename=<output_file>
 #
 # This script currently supports mesh files in the ESMF unstructed mesh format.
 #
-# There is not enough memory on the gadi login node to run this, its simplest to run
-# in a terminal through are.nci.org.au
+# There is not enough memory on the gadi login node to run this, its simplest to run in
+# a terminal through are.nci.org.au
 #
-# The run command and full github url of the current version of this script is added
-# to the metadata of the generated weights file. This is to uniquely identify the
-# script and inputs used to generate the mesh file. To produce weights files for
-# sharing, ensure you are using a version of this script which is committed and
-# pushed to github. For mesh files intended for released configurations, use the
-# latest version checked in to the main branch of the github repository.
+# The run command and full github url of the current version of this script is added to the
+# metadata of the generated weights file. This is to uniquely identify the script and inputs used
+# to generate the mesh file. To produce weights files for sharing, ensure you are using a version
+# of this script which is committed and pushed to github. For mesh files intended for released
+# configurations, use the latest version checked in to the main branch of the github repository.
 #
 # Contact:
 #   Anton Steketee <anton.steketee@anu.edu.au>
@@ -95,15 +91,11 @@ class Rof_Remapping_Weights:
     def __init__(
         self, mesh_filename, weights_filename, nx, ny, spread, input_mesh_filename=None
     ):
-        # We need to generate remapping weights for use in the mediator, such that
-        # the overall volume of runoff is conserved and no runoff is mapped onto
-        # land cells. Inside the mediator,
-        # For OM3: the grid doesn't change as we run the mediator with
-        # the ocean grid (the DROF component does the remapping from JRA grid to
-        # mediator grid). Therefore input_mesh_filename defaults to mesh_filename
-        # For CM3, the input_mesh_filename can be set to a different mesh if
-        # the source (unmasked, runoff-providing) grid  (aka the UM) differs from
-        # the destination (masked, ocean) grid.
+        # We need to generate remapping weights for use in the mediator, such that the overall volume of runoff is conserved
+        # and no runoff is mapped onto land cells. For OM3, inside the mediator, the grid doesn't change as we run the mediator with
+        # the ocean grid (the DROF component does the remapping from JRA grid to mediator grid). Therefore input_mesh_filename
+        # defaults to mesh_filename. For CM3, input_mesh_filename can be set to a different mesh if the source (unmasked,
+        # runoff-providing) grid (aka the UM) differs from the destination (masked, ocean) grid.
 
         self.mesh_filename = mesh_filename
         self.mesh_ds = xr.open_dataset(mesh_filename)
@@ -121,8 +113,8 @@ class Rof_Remapping_Weights:
 
     def target_masks(self):
         """
-        create masks for where runoff can be placed when being placed at coast
-        (nospread) or being spread
+        create masks for where runoff can be placed when being placed at coast (nospread)
+        or being spread
         """
         # make new mask of land plus one adjacent cell of ocean
         ocn_mask = self.mesh_ds.elementMask.values == 1
@@ -163,10 +155,9 @@ class Rof_Remapping_Weights:
 
     def spread_weights(self):
         """
-        For each of the spread and nospread target masks, use a ball tree to find
-        nearest ocean cells. For cells in the spread source mask, spread with
-        exponential decay away from the cell. For cells ourside this mask, map to
-        the closest ocean cell only.
+        For each of the spread and nospread target masks, use a ball tree to find nearest ocean cells.
+        For cells in the spread source mask, spread with exponential decay away from the cell
+        For cells ourside this mask, map to the closest ocean cell only.
         """
 
         # Haversine distances expect lat first, lon second, so index coordDim backwards
@@ -212,18 +203,13 @@ class Rof_Remapping_Weights:
                 return_distance=True,
             )
 
-        # From:
-        # https://earthsystemmodeling.org/docs/release/ESMF_5_2_0rp3/ESMF_refdoc/node3.html
-        # " The indices and weights generated by ESMF_FieldRegridStore() are stored
-        # in the output file as variables col, row and S. Where col and row are the
-        # indices to the source and the destination grid cells. These are a
-        # one-dimension array with length defined by dimension n_s. S is the weight
-        # which is multiplied by the source value indicated by col and then summed
-        # with the destination value indicated by row to build the final
-        # interpolated value of the destination.
+        # From https://earthsystemmodeling.org/docs/release/ESMF_5_2_0rp3/ESMF_refdoc/node3.html :
+        # " The indices and weights generated by ESMF_FieldRegridStore() are stored in the output file as variables col, row
+        # and S. Where col and row are the indices to the source and the destination grid cells. These are a one-dimension
+        # array with length defined by dimension n_s. S is the weight which is multiplied by the source value indicated by
+        # col and then summed with the destination value indicated by row to build the final interpolated value of the destination.
 
-        # make 2d array of indices and weights, then fill with spread/no_spread
-        # depending on the row
+        # make 2d array of indices and weights, then fill with spread/no_spread depending on the row
         n = len(in_coords_rad)
         indices = np.full((n, SPREAD_N), -1, dtype=int)
         weights = np.zeros((n, SPREAD_N), dtype=float)
@@ -333,8 +319,7 @@ def gen_rof_weights(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create an remapping weights to transfer runoff from unmasked "
-        "mesh to masked mesh using ESMF mesh file."
+        description="Create an remapping weights to transfer runoff from unmasked mesh to masked mesh using ESMF mesh file."
     )
 
     parser.add_argument(
