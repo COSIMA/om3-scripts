@@ -303,7 +303,7 @@ def test_get_git_url_relative_path(monkeypatch, tmp_path):
     }
     monkeypatch.setattr(
         "subprocess.check_output",
-        lambda cmd: git_output[cmd[-1]],
+        lambda cmd, **kwargs: git_output[cmd[-1]],
     )
 
     assert get_git_url(str(script)) == (
