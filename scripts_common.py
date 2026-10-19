@@ -52,7 +52,7 @@ def get_git_url(file):
     if url.startswith("git@github.com:"):
         url = f"https://github.com/{url.removeprefix('git@github.com:')}"
 
-    rel_path = file.removeprefix(top_level_dir)
+    rel_path = os.path.relpath(file, top_level_dir)
 
     hash = (
         subprocess.check_output(["git", "-C", dirname, "rev-parse", "HEAD"])
