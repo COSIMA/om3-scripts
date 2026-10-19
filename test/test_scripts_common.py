@@ -291,3 +291,22 @@ def test_get_git_url_returns_none_without_git(script_file, monkeypatch):
     )
 
     assert get_git_url(str(script_file)) is None
+
+
+def test_get_git_url_relative_path(monkeypatch, tmp_path):
+    script = tmp_path / "external_tidal_generation" / "generate_tide_amplitude.py"
+
+    git_output = {
+        "remote.origin.url": b"git@github.com:ACCESS-NRI/om3-scripts.git\n",
+        "--show-toplevel": f"{tmp_path}\n".encode(),
+        "HEAD": b"abc123\n",
+    }
+    monkeypatch.setattr(
+        "subprocess.check_output",
+        lambda cmd: git_output[cmd[-1]],
+    )
+
+    assert get_git_url(str(script)) == (
+        "https://github.com/ACCESS-NRI/om3-scripts/blob/abc123/"
+        "external_tidal_generation/generate_tide_amplitude.py"
+    )
