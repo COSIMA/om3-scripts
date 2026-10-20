@@ -187,7 +187,21 @@ class Concat_Ice_Daily:
 
                 # if monthly file already exists, don't process again
                 if not filename.exists():
-                    monthly_ncs.append(ds.to_netcdf(filename, compute=False))
+                    # chunk the file the same as the dask chunks (whole month in time),
+                    # so each chunk is written once. Setting encoding replaces the
+                    # compression settings, so set those too.
+                    encoding = {
+                        var: {
+                            "chunksizes": ds[var].data.chunksize,
+                            "zlib": True,
+                            "complevel": 1,
+                        }
+                        for var in ds.data_vars
+                        if ds[var].ndim >= 3
+                    }
+                    monthly_ncs.append(
+                        ds.to_netcdf(filename, encoding=encoding, compute=False)
+                    )
 
         if len(self.month_f) == 0:
             self.cleanup_exit(
