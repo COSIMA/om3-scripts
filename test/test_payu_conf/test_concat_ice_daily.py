@@ -66,7 +66,13 @@ def dummy_files(
     )
     ds = da.to_dataset(name="aice")
     if chunksizes:
-        ds["aice"].encoding["chunksizes"] = chunksizes
+        # write like CICE does: chunked, compressed and with a fill value
+        ds["aice"].encoding |= {
+            "chunksizes": chunksizes,
+            "zlib": True,
+            "complevel": 1,
+            "_FillValue": 1e30,
+        }
 
     ds.attrs["comment2"] = "Written by model on day xx"
     ds.attrs["comment3"] = "pytest made this"
@@ -265,8 +271,8 @@ def test_chunk_and_persist(hist_base, tmp_path, ndays, shared_client):
 
 def test_monthly_file_chunks(hist_base, tmp_path, shared_client):
     """
-    Check the monthly files are chunked as the whole month in time, with the
-    spatial chunks of the daily files, and are compressed.
+    Check the monthly files have the spatial chunks of the daily files,
+    and keep their compression and fill value.
     """
 
     daily_paths = dummy_files(
@@ -280,7 +286,9 @@ def test_monthly_file_chunks(hist_base, tmp_path, shared_client):
     for month, ndays in [("2010-01", 31), ("2010-02", 28)]:
         ds = xr.open_dataset(f"{output_dir}/{hist_base}.{month}.nc")
         enc = ds["aice"].encoding
-        assert tuple(enc["chunksizes"]) == (ndays, 10, 25)
+        assert tuple(enc["chunksizes"][1:]) == (10, 25)
+        assert 1 <= enc["chunksizes"][0] <= ndays
         assert enc["zlib"] is True
         assert enc["complevel"] == 1
+        assert enc["_FillValue"] == 1e30
         ds.close()

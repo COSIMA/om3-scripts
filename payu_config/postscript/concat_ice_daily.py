@@ -187,21 +187,16 @@ class Concat_Ice_Daily:
 
                 # if monthly file already exists, don't process again
                 if not filename.exists():
-                    # chunk the file the same as the dask chunks (whole month in time),
-                    # so each chunk is written once. Setting encoding replaces the
-                    # compression settings, so set those too.
-                    encoding = {
-                        var: {
-                            "chunksizes": ds[var].data.chunksize,
-                            "zlib": True,
-                            "complevel": 1,
-                        }
-                        for var in ds.data_vars
-                        if ds[var].ndim >= 3
-                    }
-                    monthly_ncs.append(
-                        ds.to_netcdf(filename, encoding=encoding, compute=False)
-                    )
+                    # use the existing x,y chunks and let netCDF choose the time
+                    # chunk (0). Other encoding (compression, fill values) is kept
+                    # from the daily files. xarray drops chunksizes if the shape
+                    # differs from original_shape, so remove that.
+                    for var in ds.data_vars:
+                        if ds[var].ndim >= 3:
+                            enc = ds[var].encoding
+                            enc["chunksizes"] = (0,) + ds[var].data.chunksize[1:]
+                            enc.pop("original_shape", None)
+                    monthly_ncs.append(ds.to_netcdf(filename, compute=False))
 
         if len(self.month_f) == 0:
             self.cleanup_exit(
