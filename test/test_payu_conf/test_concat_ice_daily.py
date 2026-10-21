@@ -73,6 +73,9 @@ def dummy_files(
             "complevel": 1,
             "_FillValue": 1e30,
         }
+        # 3D variable without time, like CICE's grid cell bounds
+        ds["lont_bounds"] = (("x", "y", "nvertices"), np.random.rand(nx, ny, 4))
+        ds["lont_bounds"].encoding["chunksizes"] = (10, 25, 4)
 
     ds.attrs["comment2"] = "Written by model on day xx"
     ds.attrs["comment3"] = "pytest made this"
@@ -291,4 +294,6 @@ def test_monthly_file_chunks(hist_base, tmp_path, shared_client):
         assert enc["zlib"] is True
         assert enc["complevel"] == 1
         assert enc["_FillValue"] == 1e30
+        # variables without time keep their chunks
+        assert tuple(ds["lont_bounds"].encoding["chunksizes"]) == (10, 25, 4)
         ds.close()
